@@ -2,36 +2,66 @@ import { NextResponse } from "next/server";
 import { v4 as uuidv4 } from "uuid";
 import { Recipe } from "@/lib/types";
 
-// Storage backend: Vercel KV in production, local JSON file in development
+// ── Storage helpers ────────────────────────────────────────────────────────────
+// Uses Vercel KV REST API in production, local JSON file in development.
+
+const KV_URL = process.env.KV_REST_API_URL;
+const KV_TOKEN = process.env.KV_REST_API_TOKEN;
+
 async function readRecipes(): Promise<Recipe[]> {
-  if (process.env.KV_REST_API_URL) {
-    const { kv } = await import("@vercel/kv");
-    return (await kv.get<Recipe[]>("recipes")) ?? [];
+  if (KV_URL && KV_TOKEN) {
+    const res = await fetch(`${KV_URL}/get/recipes`, {
+      headers: { Authorization: `Bearer ${KV_TOKEN}` },
+      cache: "no-store",
+    });
+    const json = await res.json();
+    if (!json.result) return [];
+    return typeof json.result === "string"
+      ? JSON.parse(json.result)
+      : json.result;
   }
-  // Local dev fallback: read from file
-  const fs = await import("fs");
-  const path = await import("path");
-  const file = path.join(process.cwd(), "data", "recipes.json");
+  return readLocalRecipes();
+}
+
+async function writeRecipes(recipes: Recipe[]): Promise<void> {
+  if (KV_URL && KV_TOKEN) {
+    await fetch(`${KV_URL}/set/recipes`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${KV_TOKEN}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(recipes),
+    });
+    return;
+  }
+  writeLocalRecipes(recipes);
+}
+
+function readLocalRecipes(): Recipe[] {
   try {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const fs = require("fs");
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const path = require("path");
+    const file = path.join(process.cwd(), "data", "recipes.json");
     return JSON.parse(fs.readFileSync(file, "utf-8"));
   } catch {
     return [];
   }
 }
 
-async function writeRecipes(recipes: Recipe[]): Promise<void> {
-  if (process.env.KV_REST_API_URL) {
-    const { kv } = await import("@vercel/kv");
-    await kv.set("recipes", recipes);
-    return;
-  }
-  // Local dev fallback: write to file
-  const fs = await import("fs");
-  const path = await import("path");
+function writeLocalRecipes(recipes: Recipe[]): void {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const fs = require("fs");
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const path = require("path");
   const file = path.join(process.cwd(), "data", "recipes.json");
   fs.mkdirSync(path.dirname(file), { recursive: true });
   fs.writeFileSync(file, JSON.stringify(recipes, null, 2));
 }
+
+// ── Route handlers ─────────────────────────────────────────────────────────────
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
@@ -55,7 +85,7 @@ export async function POST(request: Request) {
 
     if (!body.title || !body.category || !body.subcategory || !body.uploadedBy) {
       return NextResponse.json(
-        { error: "Missing required fields: title, category, subcategory, uploadedBy" },
+        { error: "Missing required fields" },
         { status: 400 }
       );
     }
