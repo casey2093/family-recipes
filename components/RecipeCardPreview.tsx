@@ -40,10 +40,10 @@ export default function RecipeCardPreview({ recipe, onClick }: Props) {
   };
 
   return (
-    <div className="relative group">
+    <div className="relative group hover:-translate-y-1 transition-all duration-200">
       <button
         onClick={() => onClick(recipe)}
-        className="w-full text-left bg-white rounded-2xl shadow-card hover:shadow-card-hover hover:-translate-y-1 transition-all duration-200 overflow-hidden border border-gray-100"
+        className="w-full text-left bg-white rounded-2xl shadow-card hover:shadow-card-hover transition-shadow duration-200 overflow-hidden border border-gray-100"
       >
         {/* Dish image */}
         {recipe.imageUrl && (

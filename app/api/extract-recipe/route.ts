@@ -45,7 +45,7 @@ Return ONLY a valid JSON object with exactly this structure (no other text, no m
 {
   "title": "Recipe title here",
   "ingredients": ["1 cup flour", "2 eggs", "...each ingredient as its own string with quantity"],
-  "instructions": ["Step 1: Do this...", "Step 2: Do that...", "...each step as its own string"],
+  "instructions": ["Do this...", "Do that...", "...each step as its own string"],
   "prepTime": 15,
   "cookTime": 30,
   "servings": 4,
@@ -57,6 +57,7 @@ Rules:
 - Each instruction should be one complete step
 - prepTime and cookTime must be integers in minutes (use 0 if not visible, estimate if implied)
 - servings must be an integer (use 4 as default if not visible)
+- Do NOT include "Step 1:", "Step 2:", "1.", "2." or any numbering in instruction text — steps are numbered automatically in the UI
 - If you cannot read the recipe clearly, do your best to extract what you can
 - Return ONLY the JSON object, nothing else`,
             },

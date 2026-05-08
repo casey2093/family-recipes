@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import { Recipe, Author } from "@/lib/types";
@@ -17,6 +17,12 @@ export default function AuthorPage() {
   const [recipes, setRecipes] = useState<Recipe[]>([]);
   const [viewRecipe, setViewRecipe] = useState<Recipe | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editName, setEditName] = useState("");
+  const [editImageUrl, setEditImageUrl] = useState("");
+  const [uploadingPhoto, setUploadingPhoto] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     Promise.all([
@@ -34,6 +40,55 @@ export default function AuthorPage() {
       .catch(() => setLoading(false));
   }, [name]);
 
+  const startEditing = () => {
+    setEditName(author?.name ?? name);
+    setEditImageUrl(author?.imageUrl ?? "");
+    setIsEditing(true);
+  };
+
+  const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploadingPhoto(true);
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      const res = await fetch("/api/upload", { method: "POST", body: formData });
+      if (res.status === 503) {
+        alert("Photo upload is not available. Please set up Vercel Blob storage first.");
+        return;
+      }
+      const data = await res.json();
+      if (data.url) setEditImageUrl(data.url);
+    } finally {
+      setUploadingPhoto(false);
+    }
+  };
+
+  const saveProfile = async () => {
+    if (!editName.trim()) return;
+    setSaving(true);
+    try {
+      await fetch("/api/authors", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: editName.trim(),
+          imageUrl: editImageUrl || undefined,
+          originalName: author?.name ?? name,
+        }),
+      });
+      setAuthor((prev) => ({
+        ...(prev ?? { id: "", createdAt: new Date().toISOString() }),
+        name: editName.trim(),
+        imageUrl: editImageUrl || undefined,
+      }));
+      setIsEditing(false);
+    } finally {
+      setSaving(false);
+    }
+  };
+
   if (loading) {
     return <div className="pt-32 text-center text-gray-400">Loading…</div>;
   }
@@ -49,21 +104,75 @@ export default function AuthorPage() {
           </nav>
 
           <div className="flex items-center gap-5">
-            <div className="w-20 h-20 rounded-full overflow-hidden flex-shrink-0 border-4 border-white shadow-md">
-              {author?.imageUrl ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={author.imageUrl} alt={name} className="w-full h-full object-cover" />
-              ) : (
-                <div className="w-full h-full bg-recipe-rose flex items-center justify-center text-recipe-pink text-3xl font-bold font-playfair">
-                  {name.charAt(0).toUpperCase()}
-                </div>
+            <div className="relative w-20 h-20 flex-shrink-0">
+              <div className="w-20 h-20 rounded-full overflow-hidden border-4 border-white shadow-md">
+                {(isEditing ? editImageUrl : author?.imageUrl) ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={isEditing ? editImageUrl : author?.imageUrl} alt={name} className="w-full h-full object-cover" />
+                ) : (
+                  <div className="w-full h-full bg-recipe-rose flex items-center justify-center text-recipe-pink text-3xl font-bold font-playfair">
+                    {(isEditing ? editName : name).charAt(0).toUpperCase()}
+                  </div>
+                )}
+              </div>
+              {isEditing && (
+                <>
+                  <button
+                    onClick={() => fileInputRef.current?.click()}
+                    disabled={uploadingPhoto}
+                    className="absolute bottom-0 right-0 w-7 h-7 bg-recipe-pink text-white rounded-full flex items-center justify-center shadow-md hover:opacity-90 text-xs"
+                    title="Change photo"
+                  >
+                    {uploadingPhoto ? "…" : "📷"}
+                  </button>
+                  <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handlePhotoUpload} />
+                </>
               )}
             </div>
-            <div>
-              <h1 className="font-playfair font-bold text-recipe-navy text-3xl sm:text-4xl">{name}</h1>
-              <p className="text-gray-500 mt-1">
-                {recipes.length} {recipes.length === 1 ? "recipe" : "recipes"} shared
-              </p>
+            <div className="flex-1 min-w-0">
+              {isEditing ? (
+                <div className="flex flex-col gap-2">
+                  <input
+                    value={editName}
+                    onChange={(e) => setEditName(e.target.value)}
+                    className="font-playfair font-bold text-recipe-navy text-2xl border-b-2 border-recipe-pink bg-transparent focus:outline-none w-full"
+                    placeholder="Your name"
+                  />
+                  <div className="flex items-center gap-2 mt-1">
+                    <button
+                      onClick={saveProfile}
+                      disabled={saving || !editName.trim()}
+                      className="bg-recipe-pink text-white px-4 py-1.5 rounded-full text-sm font-bold hover:opacity-90 disabled:opacity-50"
+                    >
+                      {saving ? "Saving…" : "Save"}
+                    </button>
+                    <button
+                      onClick={() => setIsEditing(false)}
+                      className="text-gray-500 px-4 py-1.5 rounded-full text-sm font-bold hover:bg-gray-100"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <>
+                  <h1 className="font-playfair font-bold text-recipe-navy text-3xl sm:text-4xl">{author?.name ?? name}</h1>
+                  <div className="flex items-center gap-3 mt-1">
+                    <p className="text-gray-500">
+                      {recipes.length} {recipes.length === 1 ? "recipe" : "recipes"} shared
+                    </p>
+                    <button
+                      onClick={startEditing}
+                      className="text-xs text-recipe-pink font-semibold hover:underline flex items-center gap-1"
+                    >
+                      <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                      </svg>
+                      Edit Profile
+                    </button>
+                  </div>
+                </>
+              )}
             </div>
           </div>
         </div>

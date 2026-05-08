@@ -48,7 +48,7 @@ export default function RecipeCardFull({ recipe, showMeta = true }: Props) {
                 Relevant Links
               </a>
             ) : (
-              <span className="italic">{recipe.source}</span>
+              <span>{recipe.source}</span>
             )}
           </div>
         )}

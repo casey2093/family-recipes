@@ -20,12 +20,15 @@ export async function POST(request: Request) {
     }
 
     const authors = await readAuthors();
-    const existing = authors.find(
-      (a) => a.name.toLowerCase() === body.name.trim().toLowerCase()
-    );
+    const lookupName = (body.originalName ?? body.name).trim().toLowerCase();
+    const existing = authors.find((a) => a.name.toLowerCase() === lookupName);
 
     if (existing) {
-      const updated = { ...existing, imageUrl: body.imageUrl ?? existing.imageUrl };
+      const updated = {
+        ...existing,
+        name: body.name.trim(),
+        imageUrl: body.imageUrl !== undefined ? body.imageUrl : existing.imageUrl,
+      };
       await kvSet("authors", authors.map((a) => (a.id === existing.id ? updated : a)));
       return NextResponse.json(updated);
     }

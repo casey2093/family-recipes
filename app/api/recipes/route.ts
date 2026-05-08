@@ -91,3 +91,40 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Failed to save recipe" }, { status: 500 });
   }
 }
+
+export async function PATCH(request: Request) {
+  try {
+    const body = await request.json();
+    if (!body.id) return NextResponse.json({ error: "Recipe ID required" }, { status: 400 });
+
+    const recipes = await readRecipes();
+    const index = recipes.findIndex((r) => r.id === body.id);
+    if (index === -1) return NextResponse.json({ error: "Recipe not found" }, { status: 404 });
+
+    const existing = recipes[index];
+    const updated: Recipe = {
+      ...existing,
+      title: body.title?.trim() || existing.title,
+      category: body.category || existing.category,
+      subcategory: body.subcategory || existing.subcategory,
+      ingredients: body.ingredients
+        ? (body.ingredients as string[]).filter((s) => s.trim())
+        : existing.ingredients,
+      instructions: body.instructions
+        ? (body.instructions as string[]).filter((s) => s.trim())
+        : existing.instructions,
+      prepTime: body.prepTime !== undefined ? Number(body.prepTime) || 0 : existing.prepTime,
+      cookTime: body.cookTime !== undefined ? Number(body.cookTime) || 0 : existing.cookTime,
+      servings: body.servings !== undefined ? Number(body.servings) || 1 : existing.servings,
+      source: body.source !== undefined ? body.source?.trim() || undefined : existing.source,
+      imageUrl: body.imageUrl !== undefined ? body.imageUrl?.trim() || undefined : existing.imageUrl,
+    };
+
+    recipes[index] = updated;
+    await writeRecipes(recipes);
+    return NextResponse.json(updated);
+  } catch (error) {
+    console.error("Error updating recipe:", error);
+    return NextResponse.json({ error: "Failed to update recipe" }, { status: 500 });
+  }
+}

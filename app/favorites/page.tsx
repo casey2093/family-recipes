@@ -2,9 +2,72 @@
 
 import { useState, useEffect } from "react";
 import { Recipe } from "@/lib/types";
+import { getCategoryById } from "@/lib/categories";
 import { useModal } from "@/context/ModalContext";
 import RecipeCardPreview from "@/components/RecipeCardPreview";
 import RecipeViewModal from "@/components/RecipeViewModal";
+
+function FavoriteDashboard({ recipes }: { recipes: Recipe[] }) {
+  if (recipes.length === 0) return null;
+
+  const authorCounts: Record<string, number> = {};
+  recipes.forEach((r) => {
+    authorCounts[r.uploadedBy] = (authorCounts[r.uploadedBy] ?? 0) + 1;
+  });
+  const topAuthor = Object.entries(authorCounts).sort((a, b) => b[1] - a[1])[0];
+
+  const categoryCounts: Record<string, number> = {};
+  recipes.forEach((r) => {
+    categoryCounts[r.category] = (categoryCounts[r.category] ?? 0) + 1;
+  });
+  const topCategoryEntry = Object.entries(categoryCounts).sort((a, b) => b[1] - a[1])[0];
+  const topCategoryInfo = getCategoryById(topCategoryEntry?.[0]);
+
+  const totalTime = recipes.reduce((sum, r) => sum + r.prepTime + r.cookTime, 0);
+
+  return (
+    <div className="bg-recipe-navy text-white">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 py-4 flex flex-wrap items-center justify-center gap-6 sm:gap-10 text-sm">
+        <div className="flex items-center gap-2">
+          <span className="font-bold text-recipe-gold text-xl">{recipes.length}</span>
+          <span className="text-white/80">{recipes.length === 1 ? "Favorite" : "Favorites"}</span>
+        </div>
+        <div className="w-px h-4 bg-white/20 hidden sm:block" />
+        <div className="flex items-center gap-2">
+          <span className="font-bold text-recipe-gold text-xl">{Object.keys(categoryCounts).length}</span>
+          <span className="text-white/80">{Object.keys(categoryCounts).length === 1 ? "Category" : "Categories"}</span>
+        </div>
+        {topAuthor && (
+          <>
+            <div className="w-px h-4 bg-white/20 hidden sm:block" />
+            <div className="flex items-center gap-2">
+              <span className="text-white/80">Favorite chef:</span>
+              <span className="font-bold text-blue-200">{topAuthor[0]}</span>
+            </div>
+          </>
+        )}
+        {topCategoryInfo && (
+          <>
+            <div className="w-px h-4 bg-white/20 hidden sm:block" />
+            <div className="flex items-center gap-2">
+              <span className="text-white/80">Top category:</span>
+              <span className="font-bold text-blue-200">{topCategoryInfo.emoji} {topCategoryInfo.name}</span>
+            </div>
+          </>
+        )}
+        {totalTime > 0 && (
+          <>
+            <div className="w-px h-4 bg-white/20 hidden sm:block" />
+            <div className="flex items-center gap-2">
+              <span className="font-bold text-recipe-gold text-xl">{totalTime}</span>
+              <span className="text-white/80">total mins of cooking</span>
+            </div>
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
 
 export default function FavoritesPage() {
   const { openAddModal } = useModal();
@@ -41,6 +104,8 @@ export default function FavoritesPage() {
           <p className="text-gray-500 mt-2">Recipes you&apos;ve starred</p>
         </div>
       </div>
+
+      <FavoriteDashboard recipes={favoriteRecipes} />
 
       <div className="max-w-6xl mx-auto px-4 sm:px-6 py-10">
         {favoriteRecipes.length > 0 ? (

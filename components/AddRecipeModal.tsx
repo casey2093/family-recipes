@@ -4,6 +4,22 @@ import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { CATEGORIES } from "@/lib/categories";
 import { RecipeFormData, emptyFormData, Recipe, Author } from "@/lib/types";
+
+function recipeToFormData(recipe: Recipe): RecipeFormData {
+  return {
+    title: recipe.title,
+    category: recipe.category,
+    subcategory: recipe.subcategory,
+    ingredients: recipe.ingredients.length ? recipe.ingredients : [""],
+    instructions: recipe.instructions.length ? recipe.instructions : [""],
+    prepTime: String(recipe.prepTime),
+    cookTime: String(recipe.cookTime),
+    servings: String(recipe.servings),
+    source: recipe.source ?? "",
+    imageUrl: recipe.imageUrl ?? "",
+    uploadedBy: recipe.uploadedBy,
+  };
+}
 import RecipeCardFull from "./RecipeCardFull";
 import AuthorInput from "./AuthorInput";
 
@@ -11,6 +27,7 @@ type Step = "method-select" | "manual" | "upload" | "processing" | "preview" | "
 
 interface Props {
   defaultCategory?: string;
+  editRecipe?: Recipe;
   onClose: () => void;
 }
 
@@ -53,14 +70,17 @@ async function uploadFile(file: File): Promise<string | undefined> {
   }
 }
 
-export default function AddRecipeModal({ defaultCategory, onClose }: Props) {
+export default function AddRecipeModal({ defaultCategory, editRecipe, onClose }: Props) {
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const dishImageInputRef = useRef<HTMLInputElement>(null);
   const profileImageInputRef = useRef<HTMLInputElement>(null);
 
-  const [step, setStep] = useState<Step>("method-select");
-  const [form, setForm] = useState<RecipeFormData>(() => buildInitialForm(defaultCategory));
+  const isEditing = !!editRecipe;
+  const [step, setStep] = useState<Step>(() => (editRecipe ? "edit" : "method-select"));
+  const [form, setForm] = useState<RecipeFormData>(() =>
+    editRecipe ? recipeToFormData(editRecipe) : buildInitialForm(defaultCategory)
+  );
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [imageBase64, setImageBase64] = useState<string | null>(null);
   const [imageMediaType, setImageMediaType] = useState<string>("image/jpeg");
@@ -205,15 +225,18 @@ export default function AddRecipeModal({ defaultCategory, onClose }: Props) {
         if (url) imageUrl = url;
       }
 
+      const payload = {
+        ...form,
+        imageUrl: imageUrl || undefined,
+        ingredients: form.ingredients.filter((s) => s.trim()),
+        instructions: form.instructions.filter((s) => s.trim()),
+        ...(isEditing ? { id: editRecipe!.id } : {}),
+      };
+
       const res = await fetch("/api/recipes", {
-        method: "POST",
+        method: isEditing ? "PATCH" : "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          ...form,
-          imageUrl: imageUrl || undefined,
-          ingredients: form.ingredients.filter((s) => s.trim()),
-          instructions: form.instructions.filter((s) => s.trim()),
-        }),
+        body: JSON.stringify(payload),
       });
 
       if (!res.ok) {
@@ -222,6 +245,10 @@ export default function AddRecipeModal({ defaultCategory, onClose }: Props) {
       }
 
       router.refresh();
+      if (isEditing) {
+        onClose();
+        return;
+      }
       const hasProfile = authors.some(
         (a) => a.name.toLowerCase() === form.uploadedBy.toLowerCase()
       );
@@ -261,7 +288,7 @@ export default function AddRecipeModal({ defaultCategory, onClose }: Props) {
     upload: "Upload a Photo",
     processing: "Reading your recipe…",
     preview: "Preview Your Recipe",
-    edit: "Edit Recipe",
+    edit: isEditing ? "Edit Recipe" : "Edit Recipe",
     saved: "Recipe Saved!",
   };
 
@@ -711,12 +738,23 @@ export default function AddRecipeModal({ defaultCategory, onClose }: Props) {
         {(step === "manual" || step === "edit" || step === "preview") && (
           <div className="flex-shrink-0 px-6 py-4 border-t border-gray-100 bg-white">
             {(step === "manual" || step === "edit") && (
-              <button
-                onClick={() => { if (validateForm()) setStep("preview"); }}
-                className="w-full bg-recipe-navy text-white py-3.5 rounded-xl font-bold hover:bg-opacity-90 shadow-sm"
-              >
-                Preview Recipe Card →
-              </button>
+              <div className={isEditing ? "flex gap-3" : ""}>
+                <button
+                  onClick={() => { if (validateForm()) setStep("preview"); }}
+                  className={`${isEditing ? "flex-1 border-2 border-gray-200 text-gray-700 py-3.5 rounded-xl font-bold hover:border-recipe-navy hover:text-recipe-navy" : "w-full bg-recipe-navy text-white py-3.5 rounded-xl font-bold hover:bg-opacity-90 shadow-sm"}`}
+                >
+                  Preview Recipe Card →
+                </button>
+                {isEditing && (
+                  <button
+                    onClick={() => { if (validateForm()) handleSubmit(); }}
+                    disabled={isSubmitting}
+                    className="flex-1 bg-recipe-pink text-white py-3.5 rounded-xl font-bold hover:bg-opacity-90 shadow-sm disabled:opacity-50"
+                  >
+                    {isSubmitting ? "Saving…" : "✓ Save Changes"}
+                  </button>
+                )}
+              </div>
             )}
             {step === "preview" && (
               <div className="flex flex-col sm:flex-row gap-3">
@@ -731,7 +769,7 @@ export default function AddRecipeModal({ defaultCategory, onClose }: Props) {
                   disabled={isSubmitting || !form.uploadedBy.trim() || !form.category || !form.subcategory}
                   className="flex-1 bg-recipe-pink text-white py-3 rounded-xl font-bold hover:bg-opacity-90 shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {isSubmitting ? "Saving…" : "✓ Looks Good! Save It"}
+                  {isSubmitting ? "Saving…" : isEditing ? "✓ Save Changes" : "✓ Looks Good! Save It"}
                 </button>
               </div>
             )}
