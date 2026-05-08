@@ -169,7 +169,10 @@ export default function AddRecipeModal({ defaultCategory, onClose }: Props) {
           instructions: form.instructions.filter((s) => s.trim()),
         }),
       });
-      if (!res.ok) throw new Error("Failed to save recipe");
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.error || `Save failed (${res.status})`);
+      }
       router.refresh();
       onClose();
     } catch (err) {
@@ -584,6 +587,40 @@ export default function AddRecipeModal({ defaultCategory, onClose }: Props) {
                 Here&apos;s how your recipe card will look. Does everything look right?
               </p>
 
+              {/* Category/subcategory selector if not set (photo upload flow) */}
+              {(!form.category || !form.subcategory) && (
+                <div className="bg-sky-50 border border-sky-200 rounded-xl p-4 space-y-3">
+                  <p className="text-sm font-bold text-recipe-navy">Which category does this belong to? *</p>
+                  <div className="grid grid-cols-2 gap-3">
+                    <select
+                      value={form.category}
+                      onChange={(e) => {
+                        const cat = CATEGORIES.find((c) => c.id === e.target.value);
+                        setField("category", e.target.value);
+                        setField("subcategory", cat?.subcategories[0]?.id ?? "");
+                      }}
+                      className="w-full border border-gray-300 rounded-xl px-3 py-3 text-sm focus:outline-none focus:border-recipe-navy bg-white"
+                    >
+                      <option value="">Category…</option>
+                      {CATEGORIES.map((c) => (
+                        <option key={c.id} value={c.id}>{c.name}</option>
+                      ))}
+                    </select>
+                    <select
+                      value={form.subcategory}
+                      onChange={(e) => setField("subcategory", e.target.value)}
+                      disabled={!form.category}
+                      className="w-full border border-gray-300 rounded-xl px-3 py-3 text-sm focus:outline-none focus:border-recipe-navy bg-white disabled:opacity-50"
+                    >
+                      <option value="">Subcategory…</option>
+                      {selectedCategory?.subcategories.map((s) => (
+                        <option key={s.id} value={s.id}>{s.name}</option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+              )}
+
               {/* Scrollable recipe card preview */}
               <div className="border-2 border-recipe-cream rounded-2xl overflow-hidden">
                 <RecipeCardFull recipe={formToPreviewRecipe(form)} showMeta={true} />
@@ -630,7 +667,7 @@ export default function AddRecipeModal({ defaultCategory, onClose }: Props) {
                 </button>
                 <button
                   onClick={handleSubmit}
-                  disabled={isSubmitting || !form.uploadedBy.trim()}
+                  disabled={isSubmitting || !form.uploadedBy.trim() || !form.category || !form.subcategory}
                   className="flex-1 bg-recipe-pink text-white py-3 rounded-xl font-bold hover:bg-opacity-90 shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {isSubmitting ? "Saving…" : "✓ Looks Good! Save It"}
