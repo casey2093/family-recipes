@@ -71,7 +71,7 @@ export default function CategoryPage() {
   return (
     <>
       {/* Hero header */}
-      <div className={`bg-gradient-to-br ${category.gradient} py-12 sm:py-16`}>
+      <div className="bg-gradient-to-br from-white via-sky-50 to-blue-50 py-12 sm:py-16">
         <div className="max-w-6xl mx-auto px-4 sm:px-6">
           {/* Breadcrumb */}
           <nav className="flex items-center gap-2 text-sm text-gray-500 mb-6">

@@ -28,7 +28,7 @@ export default function HomePage() {
   return (
     <>
       {/* Hero */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-sky-50 via-blue-100 to-sky-100 py-16 sm:py-24">
+      <section className="relative overflow-hidden bg-gradient-to-br from-white via-sky-50 to-blue-50 py-16 sm:py-24">
         <div className="max-w-4xl mx-auto px-6 text-center relative z-10">
           <div className="inline-flex items-center gap-2 bg-white/70 backdrop-blur-sm px-4 py-1.5 rounded-full text-sm font-semibold text-recipe-navy mb-6 shadow-sm">
             Ware Family Collection
@@ -64,30 +64,26 @@ export default function HomePage() {
       </section>
 
       {/* Stats banner */}
-      {recipes.length > 0 && (
-        <div className="bg-recipe-navy text-white">
-          <div className="max-w-4xl mx-auto px-6 py-4 flex flex-wrap items-center justify-center gap-6 sm:gap-10 text-sm">
-            <div className="flex items-center gap-2">
-              <span className="font-bold text-blue-200 text-xl">{recipes.length}</span>
-              <span className="text-white/80">Recipes shared</span>
-            </div>
-            <div className="w-px h-4 bg-white/20 hidden sm:block" />
-            <div className="flex items-center gap-2">
-              <span className="font-bold text-blue-200 text-xl">
-                {new Set(recipes.map((r) => r.uploadedBy)).size}
-              </span>
-              <span className="text-white/80">Family contributors</span>
-            </div>
-            <div className="w-px h-4 bg-white/20 hidden sm:block" />
-            <div className="flex items-center gap-2">
-              <span className="font-bold text-blue-200 text-xl">
-                {CATEGORIES.filter((c) => countByCategory(c.id) > 0).length}
-              </span>
-              <span className="text-white/80">Categories covered</span>
-            </div>
+      <div className="bg-recipe-navy text-white">
+        <div className="max-w-4xl mx-auto px-6 py-4 flex flex-wrap items-center justify-center gap-6 sm:gap-10 text-sm">
+          <div className="flex items-center gap-2">
+            <span className="font-bold text-blue-200 text-xl">{recipes.length}</span>
+            <span className="text-white/80">Recipes shared</span>
+          </div>
+          <div className="w-px h-4 bg-white/20 hidden sm:block" />
+          <div className="flex items-center gap-2">
+            <span className="font-bold text-blue-200 text-xl">
+              {new Set(recipes.map((r) => r.uploadedBy)).size}
+            </span>
+            <span className="text-white/80">Family contributors</span>
+          </div>
+          <div className="w-px h-4 bg-white/20 hidden sm:block" />
+          <div className="flex items-center gap-2">
+            <span className="font-bold text-blue-200 text-xl">{CATEGORIES.length}</span>
+            <span className="text-white/80">Categories to explore</span>
           </div>
         </div>
-      )}
+      </div>
 
       {/* Categories grid */}
       <section id="categories" className="max-w-6xl mx-auto px-4 sm:px-6 py-14">

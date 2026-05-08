@@ -17,7 +17,7 @@ export const CATEGORIES: Category[] = [
   {
     id: "breakfast",
     name: "Breakfast",
-    emoji: "🌅",
+    emoji: "🍳",
     description: "Start your morning right",
     gradient: "from-amber-50 to-orange-100",
     accentColor: "#F59E0B",
@@ -121,7 +121,7 @@ export const CATEGORIES: Category[] = [
   {
     id: "snacks",
     name: "Snacks",
-    emoji: "🥜",
+    emoji: "🥣",
     description: "Nibbles & between-meal bites",
     gradient: "from-yellow-50 to-amber-100",
     accentColor: "#D97706",
