@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { CATEGORIES } from "@/lib/categories";
@@ -8,8 +8,13 @@ import { useModal } from "@/context/ModalContext";
 
 export default function Navigation() {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [myName, setMyName] = useState<string | null>(null);
   const pathname = usePathname();
   const { openAddModal } = useModal();
+
+  useEffect(() => {
+    setMyName(localStorage.getItem("wfk_author_name"));
+  }, []);
 
   return (
     <>
@@ -45,6 +50,16 @@ export default function Navigation() {
 
           {/* Add recipe button + hamburger */}
           <div className="flex items-center gap-2 flex-shrink-0">
+            {myName && (
+              <Link
+                href={`/author/${encodeURIComponent(myName)}`}
+                className="hidden sm:flex items-center gap-1 text-sm font-semibold text-gray-600 hover:text-recipe-navy px-2 py-1.5 rounded-full hover:bg-recipe-cream transition-all"
+                title="My Recipes"
+              >
+                <span className="text-base">👤</span>
+                <span className="hidden xl:inline">My Recipes</span>
+              </Link>
+            )}
             <Link
               href="/favorites"
               className="hidden sm:flex items-center gap-1 text-sm font-semibold text-gray-600 hover:text-recipe-navy px-2 py-1.5 rounded-full hover:bg-recipe-cream transition-all"
@@ -106,6 +121,15 @@ export default function Navigation() {
               >
                 ☆ My Favorites
               </Link>
+              {myName && (
+                <Link
+                  href={`/author/${encodeURIComponent(myName)}`}
+                  onClick={() => setMobileOpen(false)}
+                  className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-recipe-navy font-semibold hover:bg-recipe-cream mb-1"
+                >
+                  👤 My Recipes
+                </Link>
+              )}
               {CATEGORIES.map((cat) => {
                 const active = pathname === `/${cat.id}`;
                 return (

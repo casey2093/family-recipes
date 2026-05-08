@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { useRouter } from "next/navigation";
 import { CATEGORIES } from "@/lib/categories";
 import { RecipeFormData, emptyFormData, Recipe, Author } from "@/lib/types";
 
@@ -71,7 +70,6 @@ async function uploadFile(file: File): Promise<string | undefined> {
 }
 
 export default function AddRecipeModal({ defaultCategory, editRecipe, onClose }: Props) {
-  const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const dishImageInputRef = useRef<HTMLInputElement>(null);
   const profileImageInputRef = useRef<HTMLInputElement>(null);
@@ -87,6 +85,7 @@ export default function AddRecipeModal({ defaultCategory, editRecipe, onClose }:
   const [processingError, setProcessingError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState<Partial<Record<keyof RecipeFormData, string>>>({});
+
 
   // Dish image
   const [dishImageFile, setDishImageFile] = useState<File | null>(null);
@@ -244,9 +243,11 @@ export default function AddRecipeModal({ defaultCategory, editRecipe, onClose }:
         throw new Error(data.error || `Save failed (${res.status})`);
       }
 
-      router.refresh();
+      localStorage.setItem("wfk_author_name", form.uploadedBy.trim());
+
       if (isEditing) {
         onClose();
+        window.location.reload();
         return;
       }
       const hasProfile = authors.some(
@@ -274,6 +275,7 @@ export default function AddRecipeModal({ defaultCategory, editRecipe, onClose }:
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name: form.uploadedBy, imageUrl }),
       });
+      localStorage.setItem("wfk_author_name", form.uploadedBy.trim());
     } catch {
       // fail silently — just close
     } finally {

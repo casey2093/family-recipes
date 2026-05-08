@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Link from "next/link";
 import { Recipe } from "@/lib/types";
 import { getCategoryById } from "@/lib/categories";
 import { useModal } from "@/context/ModalContext";
@@ -22,8 +23,6 @@ function FavoriteDashboard({ recipes }: { recipes: Recipe[] }) {
   });
   const topCategoryEntry = Object.entries(categoryCounts).sort((a, b) => b[1] - a[1])[0];
   const topCategoryInfo = getCategoryById(topCategoryEntry?.[0]);
-
-  const totalTime = recipes.reduce((sum, r) => sum + r.prepTime + r.cookTime, 0);
 
   return (
     <div className="bg-recipe-navy text-white">
@@ -52,15 +51,6 @@ function FavoriteDashboard({ recipes }: { recipes: Recipe[] }) {
             <div className="flex items-center gap-2">
               <span className="text-white/80">Top category:</span>
               <span className="font-bold text-blue-200">{topCategoryInfo.emoji} {topCategoryInfo.name}</span>
-            </div>
-          </>
-        )}
-        {totalTime > 0 && (
-          <>
-            <div className="w-px h-4 bg-white/20 hidden sm:block" />
-            <div className="flex items-center gap-2">
-              <span className="font-bold text-recipe-gold text-xl">{totalTime}</span>
-              <span className="text-white/80">total mins of cooking</span>
             </div>
           </>
         )}
@@ -123,12 +113,12 @@ export default function FavoritesPage() {
             <p className="text-gray-500 mb-6">
               Tap the star on any recipe to save it here for easy access.
             </p>
-            <button
-              onClick={() => openAddModal()}
-              className="bg-recipe-pink text-white px-6 py-3 rounded-full font-bold hover:bg-opacity-90 shadow-md"
+            <Link
+              href="/"
+              className="inline-block bg-recipe-pink text-white px-6 py-3 rounded-full font-bold hover:bg-opacity-90 shadow-md"
             >
               Browse Recipes
-            </button>
+            </Link>
           </div>
         )}
       </div>
