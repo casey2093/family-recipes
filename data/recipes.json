@@ -1,0 +1,141 @@
+[
+  {
+    "id": "sample-1",
+    "title": "Classic Chocolate Chip Cookies",
+    "category": "desserts",
+    "subcategory": "cookies-bars",
+    "ingredients": [
+      "2¼ cups all-purpose flour",
+      "1 tsp baking soda",
+      "1 tsp salt",
+      "1 cup (2 sticks) unsalted butter, softened",
+      "¾ cup granulated sugar",
+      "¾ cup packed brown sugar",
+      "2 large eggs",
+      "2 tsp pure vanilla extract",
+      "2 cups semi-sweet chocolate chips"
+    ],
+    "instructions": [
+      "Preheat oven to 375°F. Line baking sheets with parchment paper.",
+      "Whisk together flour, baking soda, and salt in a medium bowl. Set aside.",
+      "Beat butter and both sugars in a large bowl with an electric mixer until light and fluffy, about 3 minutes.",
+      "Beat in eggs one at a time, then mix in the vanilla.",
+      "Gradually mix in the flour mixture until just combined — don't overmix.",
+      "Fold in chocolate chips with a wooden spoon.",
+      "Drop rounded tablespoons of dough onto prepared baking sheets, spacing about 2 inches apart.",
+      "Bake for 9–11 minutes until the edges are set and golden but the centers look slightly underdone.",
+      "Cool on baking sheets for 5 minutes, then transfer to a wire rack to cool completely."
+    ],
+    "prepTime": 15,
+    "cookTime": 11,
+    "servings": 48,
+    "source": "Grandma Betty's recipe box",
+    "uploadedBy": "Grandma Betty",
+    "uploadedAt": "2024-11-20T14:30:00Z"
+  },
+  {
+    "id": "sample-2",
+    "title": "Fluffy Weekend Pancakes",
+    "category": "breakfast",
+    "subcategory": "sweet",
+    "ingredients": [
+      "1½ cups all-purpose flour",
+      "3½ tsp baking powder",
+      "1 tsp salt",
+      "1 tbsp granulated sugar",
+      "1¼ cups whole milk",
+      "1 large egg",
+      "3 tbsp melted unsalted butter",
+      "1 tsp vanilla extract",
+      "Butter and maple syrup for serving"
+    ],
+    "instructions": [
+      "Whisk together flour, baking powder, salt, and sugar in a large bowl.",
+      "Make a well in the center and pour in milk, egg, melted butter, and vanilla.",
+      "Mix until just combined — a few lumps are totally fine. Don't overmix or they'll be tough!",
+      "Heat a lightly buttered griddle or non-stick pan over medium heat.",
+      "Pour ¼ cup of batter per pancake onto the griddle.",
+      "Cook until bubbles form across the surface and edges look set, about 2–3 minutes.",
+      "Flip and cook the other side until golden brown, about 1–2 more minutes.",
+      "Serve stacked high with butter, maple syrup, and fresh berries."
+    ],
+    "prepTime": 10,
+    "cookTime": 20,
+    "servings": 8,
+    "source": "https://www.allrecipes.com/recipe/21014/good-old-fashioned-pancakes/",
+    "uploadedBy": "Aunt Sarah",
+    "uploadedAt": "2025-01-10T09:00:00Z"
+  },
+  {
+    "id": "sample-3",
+    "title": "Spinach & Artichoke Dip",
+    "category": "appetizers",
+    "subcategory": "dips",
+    "ingredients": [
+      "1 (14 oz) can artichoke hearts, drained and chopped",
+      "1 (10 oz) package frozen spinach, thawed and squeezed dry",
+      "8 oz cream cheese, softened",
+      "½ cup sour cream",
+      "½ cup mayonnaise",
+      "2 cloves garlic, minced",
+      "1 cup freshly grated Parmesan cheese",
+      "1 cup shredded mozzarella, divided",
+      "Salt and black pepper to taste",
+      "Tortilla chips or crostini for serving"
+    ],
+    "instructions": [
+      "Preheat oven to 350°F.",
+      "In a large bowl, beat cream cheese, sour cream, and mayonnaise together until smooth.",
+      "Stir in garlic, Parmesan, and ¾ cup of the mozzarella.",
+      "Fold in the artichoke hearts and squeezed-dry spinach.",
+      "Season generously with salt and pepper.",
+      "Transfer mixture to a baking dish and spread evenly.",
+      "Top with remaining ¼ cup mozzarella.",
+      "Bake for 25–30 minutes until bubbly and lightly golden on top.",
+      "Serve hot with tortilla chips, pita bread, or crostini."
+    ],
+    "prepTime": 10,
+    "cookTime": 30,
+    "servings": 8,
+    "source": "Mom's go-to party recipe",
+    "uploadedBy": "Mom",
+    "uploadedAt": "2025-02-14T18:00:00Z"
+  },
+  {
+    "id": "sample-4",
+    "title": "Sunday Pot Roast",
+    "category": "dinner",
+    "subcategory": "meat-poultry",
+    "ingredients": [
+      "3–4 lb beef chuck roast",
+      "2 tbsp olive oil",
+      "Kosher salt and black pepper",
+      "1 large onion, roughly chopped",
+      "4 large carrots, cut into 2-inch chunks",
+      "1 lb baby potatoes, halved",
+      "4 cloves garlic, minced",
+      "2 cups beef broth",
+      "1 cup dry red wine (or extra broth)",
+      "2 tbsp tomato paste",
+      "2 sprigs fresh rosemary",
+      "4 sprigs fresh thyme"
+    ],
+    "instructions": [
+      "Preheat oven to 325°F. Pat the roast very dry with paper towels and season all over with generous salt and pepper.",
+      "Heat olive oil in a large Dutch oven over medium-high heat until shimmering.",
+      "Sear the roast on all sides until deeply browned, about 4 minutes per side. Remove and set aside.",
+      "In the same pot, sauté onion until softened, about 3 minutes. Add garlic and cook 1 more minute.",
+      "Stir in tomato paste and cook for 1 minute. Pour in wine and broth, scraping up any browned bits.",
+      "Add rosemary and thyme. Return the roast to the pot — liquid should come halfway up the sides.",
+      "Tuck carrots and potatoes around the roast. Bring to a simmer.",
+      "Cover tightly and transfer to the oven. Braise for 3–3.5 hours until the meat is fork-tender.",
+      "Rest for 15 minutes before slicing. Serve with the braising juices as a gravy."
+    ],
+    "prepTime": 20,
+    "cookTime": 210,
+    "servings": 6,
+    "source": "Dad's Sunday specialty",
+    "uploadedBy": "Dad",
+    "uploadedAt": "2025-03-05T12:00:00Z"
+  }
+]
