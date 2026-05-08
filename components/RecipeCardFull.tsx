@@ -36,18 +36,18 @@ export default function RecipeCardFull({ recipe, showMeta = true }: Props) {
         </h1>
 
         {recipe.source && (
-          <div className="text-sm text-recipe-pink mt-1">
+          <div className="text-sm text-teal-600 mt-1">
             {isUrl(recipe.source) ? (
               <a
                 href={recipe.source}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="underline hover:text-opacity-80 inline-flex items-center gap-1"
+                className="underline hover:text-teal-800 inline-flex items-center gap-1"
               >
-                🔗 Relevant Links
+                Relevant Links
               </a>
             ) : (
-              <span className="italic">✍️ {recipe.source}</span>
+              <span className="italic">{recipe.source}</span>
             )}
           </div>
         )}

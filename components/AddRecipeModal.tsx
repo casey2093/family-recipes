@@ -271,7 +271,7 @@ export default function AddRecipeModal({ defaultCategory, onClose }: Props) {
                   onClick={() => setStep("manual")}
                   className="group flex items-center sm:flex-col sm:items-center gap-5 sm:gap-4 p-5 sm:p-6 rounded-2xl border-2 border-gray-200 hover:border-recipe-navy hover:bg-recipe-cream transition-all text-left sm:text-center"
                 >
-                  <div className="w-16 h-16 rounded-2xl bg-recipe-cream flex items-center justify-center text-3xl flex-shrink-0 group-hover:scale-110 transition-transform">
+                  <div className="w-16 h-16 rounded-2xl bg-sky-50 flex items-center justify-center text-3xl flex-shrink-0 group-hover:scale-110 transition-transform">
                     ✏️
                   </div>
                   <div>
@@ -589,21 +589,19 @@ export default function AddRecipeModal({ defaultCategory, onClose }: Props) {
                 <RecipeCardFull recipe={formToPreviewRecipe(form)} showMeta={true} />
               </div>
 
-              {/* Name field if not filled */}
-              {!form.uploadedBy.trim() && (
-                <div className="bg-recipe-cream rounded-xl p-4 space-y-2">
-                  <label className="block text-sm font-bold text-recipe-navy">
-                    One last thing — who&apos;s adding this recipe? *
-                  </label>
-                  <input
-                    type="text"
-                    value={form.uploadedBy}
-                    onChange={(e) => setField("uploadedBy", e.target.value)}
-                    placeholder="Your name (e.g. Aunt Carol)"
-                    className="w-full border border-gray-300 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-recipe-navy bg-white"
-                  />
-                </div>
-              )}
+              {/* Name field */}
+              <div className="bg-recipe-cream rounded-xl p-4 space-y-2">
+                <label className="block text-sm font-bold text-recipe-navy">
+                  One last thing — who&apos;s adding this recipe? *
+                </label>
+                <input
+                  type="text"
+                  value={form.uploadedBy}
+                  onChange={(e) => setField("uploadedBy", e.target.value)}
+                  placeholder="Your name (e.g. Aunt Carol)"
+                  className="w-full border border-gray-300 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-recipe-navy bg-white"
+                />
+              </div>
             </div>
           )}
         </div>

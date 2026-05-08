@@ -24,7 +24,6 @@ export const CATEGORIES: Category[] = [
     subcategories: [
       { id: "sweet", name: "Sweet" },
       { id: "savory", name: "Savory" },
-      { id: "drinks", name: "Drinks" },
       { id: "other", name: "Other" },
     ],
   },
@@ -81,8 +80,8 @@ export const CATEGORIES: Category[] = [
     gradient: "from-pink-50 to-fuchsia-100",
     accentColor: "#E8608A",
     subcategories: [
-      { id: "cakes-cupcakes", name: "Cakes & Cupcakes" },
-      { id: "cookies-bars", name: "Cookies & Bars" },
+      { id: "baked-goods", name: "Baked Goods" },
+      { id: "cakes", name: "Cakes" },
       { id: "pies-tarts", name: "Pies & Tarts" },
       { id: "frozen-treats", name: "Frozen Treats" },
       { id: "other", name: "Other" },
@@ -112,7 +111,6 @@ export const CATEGORIES: Category[] = [
     accentColor: "#0EA5E9",
     subcategories: [
       { id: "cocktails", name: "Cocktails" },
-      { id: "mocktails", name: "Mocktails" },
       { id: "hot-drinks", name: "Hot Drinks" },
       { id: "smoothies-juices", name: "Smoothies & Juices" },
       { id: "other", name: "Other" },
