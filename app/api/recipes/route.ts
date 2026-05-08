@@ -10,10 +10,16 @@ const KV_TOKEN = process.env.KV_REST_API_TOKEN;
 
 async function readRecipes(): Promise<Recipe[]> {
   if (KV_URL && KV_TOKEN) {
-    const res = await fetch(`${KV_URL}/get/recipes`, {
-      headers: { Authorization: `Bearer ${KV_TOKEN}` },
+    const res = await fetch(KV_URL, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${KV_TOKEN}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(["GET", "recipes"]),
       cache: "no-store",
     });
+    if (!res.ok) throw new Error(`KV read failed: ${res.status}`);
     const json = await res.json();
     if (!json.result) return [];
     return typeof json.result === "string"
@@ -25,14 +31,15 @@ async function readRecipes(): Promise<Recipe[]> {
 
 async function writeRecipes(recipes: Recipe[]): Promise<void> {
   if (KV_URL && KV_TOKEN) {
-    await fetch(`${KV_URL}/set/recipes`, {
+    const res = await fetch(KV_URL, {
       method: "POST",
       headers: {
         Authorization: `Bearer ${KV_TOKEN}`,
         "Content-Type": "application/json",
       },
-      body: JSON.stringify(recipes),
+      body: JSON.stringify(["SET", "recipes", JSON.stringify(recipes)]),
     });
+    if (!res.ok) throw new Error(`KV write failed: ${res.status}`);
     return;
   }
   writeLocalRecipes(recipes);
