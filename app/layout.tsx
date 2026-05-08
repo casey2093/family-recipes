@@ -17,7 +17,7 @@ const nunito = Nunito({
 });
 
 export const metadata: Metadata = {
-  title: "Our Family Kitchen",
+  title: "Ware Family Kitchen",
   description: "A lovingly curated collection of our family's favorite recipes",
 };
 

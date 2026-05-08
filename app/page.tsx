@@ -28,19 +28,19 @@ export default function HomePage() {
   return (
     <>
       {/* Hero */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-recipe-cream via-recipe-rose to-amber-50 py-16 sm:py-24">
+      <section className="relative overflow-hidden bg-gradient-to-br from-sky-50 via-blue-100 to-sky-100 py-16 sm:py-24">
         <div className="max-w-4xl mx-auto px-6 text-center relative z-10">
           <div className="inline-flex items-center gap-2 bg-white/70 backdrop-blur-sm px-4 py-1.5 rounded-full text-sm font-semibold text-recipe-navy mb-6 shadow-sm">
-            <span>🍴</span> Our Family Collection
+            Ware Family Collection
           </div>
           <h1 className="font-playfair font-bold text-recipe-navy leading-tight mb-4"
             style={{ fontSize: "clamp(2.5rem, 7vw, 4.5rem)" }}
           >
-            Our Family<br />
+            Ware Family<br />
             <span className="text-recipe-pink">Kitchen</span>
           </h1>
           <p className="text-gray-600 text-lg sm:text-xl max-w-xl mx-auto mb-8 leading-relaxed">
-            The best recipes from every corner of the family — lovingly collected in one cozy place.
+            The best recipes from every corner of the family — lovingly collected right here.
           </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <button
@@ -59,8 +59,8 @@ export default function HomePage() {
         </div>
 
         {/* Decorative blobs */}
-        <div className="absolute top-4 right-0 w-64 h-64 bg-recipe-pink/10 rounded-full blur-3xl -z-0" />
-        <div className="absolute bottom-0 left-0 w-48 h-48 bg-amber-200/30 rounded-full blur-2xl -z-0" />
+        <div className="absolute top-4 right-0 w-64 h-64 bg-blue-200/30 rounded-full blur-3xl -z-0" />
+        <div className="absolute bottom-0 left-0 w-48 h-48 bg-sky-200/40 rounded-full blur-2xl -z-0" />
       </section>
 
       {/* Stats banner */}
@@ -68,19 +68,19 @@ export default function HomePage() {
         <div className="bg-recipe-navy text-white">
           <div className="max-w-4xl mx-auto px-6 py-4 flex flex-wrap items-center justify-center gap-6 sm:gap-10 text-sm">
             <div className="flex items-center gap-2">
-              <span className="font-bold text-recipe-gold text-xl">{recipes.length}</span>
+              <span className="font-bold text-blue-200 text-xl">{recipes.length}</span>
               <span className="text-white/80">Recipes shared</span>
             </div>
             <div className="w-px h-4 bg-white/20 hidden sm:block" />
             <div className="flex items-center gap-2">
-              <span className="font-bold text-recipe-gold text-xl">
+              <span className="font-bold text-blue-200 text-xl">
                 {new Set(recipes.map((r) => r.uploadedBy)).size}
               </span>
               <span className="text-white/80">Family contributors</span>
             </div>
             <div className="w-px h-4 bg-white/20 hidden sm:block" />
             <div className="flex items-center gap-2">
-              <span className="font-bold text-recipe-gold text-xl">
+              <span className="font-bold text-blue-200 text-xl">
                 {CATEGORIES.filter((c) => countByCategory(c.id) > 0).length}
               </span>
               <span className="text-white/80">Categories covered</span>
@@ -105,11 +105,8 @@ export default function HomePage() {
               <Link
                 key={cat.id}
                 href={`/${cat.id}`}
-                className={`group relative bg-gradient-to-br ${cat.gradient} rounded-2xl p-5 text-center hover:shadow-card-hover hover:-translate-y-1 transition-all duration-200 border border-white/60 overflow-hidden`}
+                className={`group relative bg-gradient-to-br ${cat.gradient} rounded-2xl p-5 text-center shadow-sm border border-gray-200 hover:shadow-card-hover hover:-translate-y-1 transition-all duration-200 overflow-hidden`}
               >
-                <div className="text-4xl mb-3 group-hover:scale-110 transition-transform duration-200">
-                  {cat.emoji}
-                </div>
                 <h3 className="font-playfair font-bold text-recipe-navy text-base sm:text-lg mb-1">
                   {cat.name}
                 </h3>

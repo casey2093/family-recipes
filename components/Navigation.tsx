@@ -16,13 +16,9 @@ export default function Navigation() {
       <header className="fixed top-0 left-0 right-0 z-30 bg-white/95 backdrop-blur-sm border-b border-gray-100 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-4">
           {/* Logo */}
-          <Link
-            href="/"
-            className="flex items-center gap-2 flex-shrink-0 group"
-          >
-            <span className="text-2xl">🍳</span>
+          <Link href="/" className="flex items-center flex-shrink-0 group">
             <span className="font-playfair font-bold text-recipe-navy text-lg leading-tight">
-              Our Family<br className="hidden sm:block" />
+              Ware Family<br className="hidden sm:block" />
               <span className="text-recipe-pink"> Kitchen</span>
             </span>
           </Link>
@@ -35,13 +31,12 @@ export default function Navigation() {
                 <Link
                   key={cat.id}
                   href={`/${cat.id}`}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-semibold whitespace-nowrap transition-all ${
+                  className={`px-3 py-1.5 rounded-full text-sm font-semibold whitespace-nowrap transition-all ${
                     active
                       ? "bg-recipe-navy text-white"
                       : "text-gray-600 hover:bg-recipe-cream hover:text-recipe-navy"
                   }`}
                 >
-                  <span>{cat.emoji}</span>
                   {cat.name}
                 </Link>
               );
@@ -94,7 +89,7 @@ export default function Navigation() {
                 onClick={() => setMobileOpen(false)}
                 className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-recipe-navy font-semibold hover:bg-recipe-cream mb-1"
               >
-                🏠 Home
+                Home
               </Link>
               {CATEGORIES.map((cat) => {
                 const active = pathname === `/${cat.id}`;
@@ -109,7 +104,6 @@ export default function Navigation() {
                         : "text-gray-700 hover:bg-recipe-cream hover:text-recipe-navy"
                     }`}
                   >
-                    <span className="text-xl">{cat.emoji}</span>
                     {cat.name}
                   </Link>
                 );
