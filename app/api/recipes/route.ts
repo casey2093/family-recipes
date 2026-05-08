@@ -1,45 +1,18 @@
 import { NextResponse } from "next/server";
 import { v4 as uuidv4 } from "uuid";
 import { Recipe } from "@/lib/types";
-
-// ── Storage helpers ────────────────────────────────────────────────────────────
-// Uses Vercel KV REST API in production, local JSON file in development.
-
-const KV_URL = process.env.KV_REST_API_URL;
-const KV_TOKEN = process.env.KV_REST_API_TOKEN;
+import { kvGet, kvSet } from "@/lib/kv";
 
 async function readRecipes(): Promise<Recipe[]> {
-  if (KV_URL && KV_TOKEN) {
-    const res = await fetch(KV_URL, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${KV_TOKEN}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(["GET", "recipes"]),
-      cache: "no-store",
-    });
-    if (!res.ok) throw new Error(`KV read failed: ${res.status}`);
-    const json = await res.json();
-    if (!json.result) return [];
-    return typeof json.result === "string"
-      ? JSON.parse(json.result)
-      : json.result;
-  }
+  const remote = await kvGet<Recipe[]>("recipes");
+  if (remote !== null) return remote;
   return readLocalRecipes();
 }
 
 async function writeRecipes(recipes: Recipe[]): Promise<void> {
-  if (KV_URL && KV_TOKEN) {
-    const res = await fetch(KV_URL, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${KV_TOKEN}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(["SET", "recipes", JSON.stringify(recipes)]),
-    });
-    if (!res.ok) throw new Error(`KV write failed: ${res.status}`);
+  const KV_URL = process.env.KV_REST_API_URL;
+  if (KV_URL) {
+    await kvSet("recipes", recipes);
     return;
   }
   writeLocalRecipes(recipes);
@@ -68,16 +41,14 @@ function writeLocalRecipes(recipes: Recipe[]): void {
   fs.writeFileSync(file, JSON.stringify(recipes, null, 2));
 }
 
-// ── Route handlers ─────────────────────────────────────────────────────────────
-
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const category = searchParams.get("category");
+  const uploadedBy = searchParams.get("uploadedBy");
 
   const recipes = await readRecipes();
-  const filtered = category
-    ? recipes.filter((r) => r.category === category)
-    : recipes;
+  let filtered = category ? recipes.filter((r) => r.category === category) : recipes;
+  if (uploadedBy) filtered = filtered.filter((r) => r.uploadedBy === uploadedBy);
 
   filtered.sort(
     (a, b) => new Date(b.uploadedAt).getTime() - new Date(a.uploadedAt).getTime()
@@ -91,10 +62,7 @@ export async function POST(request: Request) {
     const body = await request.json();
 
     if (!body.title || !body.category || !body.subcategory || !body.uploadedBy) {
-      return NextResponse.json(
-        { error: "Missing required fields" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
     }
 
     const recipe: Recipe = {
@@ -108,6 +76,7 @@ export async function POST(request: Request) {
       cookTime: Number(body.cookTime) || 0,
       servings: Number(body.servings) || 1,
       source: body.source?.trim() || undefined,
+      imageUrl: body.imageUrl?.trim() || undefined,
       uploadedBy: body.uploadedBy.trim(),
       uploadedAt: new Date().toISOString(),
     };

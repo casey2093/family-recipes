@@ -45,6 +45,14 @@ export default function Navigation() {
 
           {/* Add recipe button + hamburger */}
           <div className="flex items-center gap-2 flex-shrink-0">
+            <Link
+              href="/favorites"
+              className="hidden sm:flex items-center gap-1 text-sm font-semibold text-gray-600 hover:text-recipe-navy px-2 py-1.5 rounded-full hover:bg-recipe-cream transition-all"
+              title="My Favorites"
+            >
+              <span className="text-base">☆</span>
+              <span className="hidden xl:inline">Favorites</span>
+            </Link>
             <button
               onClick={() => openAddModal()}
               className="hidden sm:flex items-center gap-1.5 bg-recipe-pink text-white px-4 py-2 rounded-full text-sm font-bold hover:bg-opacity-90 shadow-sm hover:shadow-md"
@@ -90,6 +98,13 @@ export default function Navigation() {
                 className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-recipe-navy font-semibold hover:bg-recipe-cream mb-1"
               >
                 Home
+              </Link>
+              <Link
+                href="/favorites"
+                onClick={() => setMobileOpen(false)}
+                className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-recipe-navy font-semibold hover:bg-recipe-cream mb-1"
+              >
+                ☆ My Favorites
               </Link>
               {CATEGORIES.map((cat) => {
                 const active = pathname === `/${cat.id}`;

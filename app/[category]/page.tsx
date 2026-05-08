@@ -25,6 +25,7 @@ export default function CategoryPage() {
   const { openAddModal } = useModal();
   const [recipes, setRecipes] = useState<Recipe[]>([]);
   const [activeTab, setActiveTab] = useState<string>("all");
+  const [activeAuthor, setActiveAuthor] = useState<string | null>(null);
   const [viewRecipe, setViewRecipe] = useState<Recipe | null>(null);
 
   useEffect(() => {
@@ -53,10 +54,13 @@ export default function CategoryPage() {
   const contributors = new Set(recipes.map((r) => r.uploadedBy)).size;
 
   // ── Filtered recipes ─────────────────────────────────────────────────────────
-  const visibleRecipes =
-    activeTab === "all"
-      ? recipes
-      : recipes.filter((r) => r.subcategory === activeTab);
+  const authorList = [...new Set(recipes.map((r) => r.uploadedBy))].sort();
+
+  const visibleRecipes = recipes.filter((r) => {
+    const subMatch = activeTab === "all" || r.subcategory === activeTab;
+    const authorMatch = !activeAuthor || r.uploadedBy === activeAuthor;
+    return subMatch && authorMatch;
+  });
 
   const tabs = [
     { id: "all", label: `All (${recipes.length})` },
@@ -166,7 +170,7 @@ export default function CategoryPage() {
 
         {/* Subcategory tabs */}
         {recipes.length > 0 && (
-          <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-2 mb-8">
+          <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-2 mb-4">
             {tabs.map((tab) => (
               <button
                 key={tab.id}
@@ -176,13 +180,39 @@ export default function CategoryPage() {
                     ? "text-white shadow-sm"
                     : "bg-white text-gray-600 border border-gray-200 hover:border-gray-300"
                 }`}
-                style={
-                  activeTab === tab.id
-                    ? { backgroundColor: category.accentColor }
-                    : {}
-                }
+                style={activeTab === tab.id ? { backgroundColor: category.accentColor } : {}}
               >
                 {tab.label}
+              </button>
+            ))}
+          </div>
+        )}
+
+        {/* Author filter */}
+        {authorList.length > 1 && (
+          <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide pb-2 mb-8">
+            <span className="text-xs font-semibold text-gray-400 flex-shrink-0">By:</span>
+            <button
+              onClick={() => setActiveAuthor(null)}
+              className={`flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold transition-all ${
+                !activeAuthor
+                  ? "bg-recipe-navy text-white"
+                  : "bg-white text-gray-600 border border-gray-200 hover:border-gray-300"
+              }`}
+            >
+              Everyone
+            </button>
+            {authorList.map((author) => (
+              <button
+                key={author}
+                onClick={() => setActiveAuthor(activeAuthor === author ? null : author)}
+                className={`flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold transition-all ${
+                  activeAuthor === author
+                    ? "bg-recipe-navy text-white"
+                    : "bg-white text-gray-600 border border-gray-200 hover:border-gray-300"
+                }`}
+              >
+                {author}
               </button>
             ))}
           </div>

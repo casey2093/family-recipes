@@ -1,9 +1,10 @@
 "use client";
 
-import { useEffect } from "react";
+import { useState, useEffect } from "react";
 import { Recipe } from "@/lib/types";
 import { getCategoryById } from "@/lib/categories";
 import RecipeCardFull from "./RecipeCardFull";
+import CommentsSection from "./CommentsSection";
 
 interface Props {
   recipe: Recipe;
@@ -12,6 +13,19 @@ interface Props {
 
 export default function RecipeViewModal({ recipe, onClose }: Props) {
   const category = getCategoryById(recipe.category);
+  const [isFavorite, setIsFavorite] = useState(false);
+
+  useEffect(() => {
+    const ids: string[] = JSON.parse(localStorage.getItem("wfk_favorites") ?? "[]");
+    setIsFavorite(ids.includes(recipe.id));
+  }, [recipe.id]);
+
+  const toggleFavorite = () => {
+    const ids: string[] = JSON.parse(localStorage.getItem("wfk_favorites") ?? "[]");
+    const newIds = isFavorite ? ids.filter((id) => id !== recipe.id) : [...ids, recipe.id];
+    localStorage.setItem("wfk_favorites", JSON.stringify(newIds));
+    setIsFavorite(!isFavorite);
+  };
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
@@ -52,6 +66,14 @@ export default function RecipeViewModal({ recipe, onClose }: Props) {
             {recipe.title}
           </h2>
           <button
+            onClick={toggleFavorite}
+            aria-label={isFavorite ? "Remove from favorites" : "Add to favorites"}
+            className="flex-shrink-0 w-9 h-9 flex items-center justify-center rounded-full hover:bg-black/10 transition-colors text-lg"
+            style={{ color: isFavorite ? "#E8608A" : "#9ca3af" }}
+          >
+            {isFavorite ? "★" : "☆"}
+          </button>
+          <button
             onClick={onClose}
             aria-label="Close"
             className="flex-shrink-0 w-9 h-9 flex items-center justify-center rounded-full text-gray-500 hover:bg-black/10 transition-colors"
@@ -65,6 +87,7 @@ export default function RecipeViewModal({ recipe, onClose }: Props) {
         {/* Scrollable recipe content */}
         <div className="flex-1 overflow-y-auto overscroll-contain">
           <RecipeCardFull recipe={recipe} showMeta={true} />
+          <CommentsSection recipeId={recipe.id} />
         </div>
       </div>
     </div>

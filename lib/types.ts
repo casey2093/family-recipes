@@ -9,6 +9,7 @@ export interface Recipe {
   cookTime: number;
   servings: number;
   source?: string;
+  imageUrl?: string;
   uploadedBy: string;
   uploadedAt: string;
 }
@@ -23,6 +24,7 @@ export interface RecipeFormData {
   cookTime: string;
   servings: string;
   source: string;
+  imageUrl: string;
   uploadedBy: string;
 }
 
@@ -36,5 +38,31 @@ export const emptyFormData: RecipeFormData = {
   cookTime: "",
   servings: "",
   source: "",
+  imageUrl: "",
   uploadedBy: "",
 };
+
+export interface Author {
+  id: string;
+  name: string;
+  imageUrl?: string;
+  createdAt: string;
+}
+
+export interface Reply {
+  id: string;
+  author: string;
+  text: string;
+  createdAt: string;
+}
+
+export interface Comment {
+  id: string;
+  recipeId: string;
+  author: string;
+  text: string;
+  imageUrl?: string;
+  likes: number;
+  replies: Reply[];
+  createdAt: string;
+}

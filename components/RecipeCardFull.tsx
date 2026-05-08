@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { Recipe } from "@/lib/types";
 import { getCategoryById, getSubcategoryName } from "@/lib/categories";
 
@@ -52,6 +53,18 @@ export default function RecipeCardFull({ recipe, showMeta = true }: Props) {
           </div>
         )}
       </div>
+
+      {/* Dish image */}
+      {recipe.imageUrl && (
+        <div className="mx-6 mb-5">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={recipe.imageUrl}
+            alt={recipe.title}
+            className="w-full rounded-xl object-cover max-h-72"
+          />
+        </div>
+      )}
 
       {/* Timing bar */}
       <div className="mx-6 mb-5">
@@ -133,12 +146,16 @@ export default function RecipeCardFull({ recipe, showMeta = true }: Props) {
       {showMeta && (
         <div className="mx-6 mb-6 rounded-xl bg-recipe-cream px-5 py-3 flex flex-wrap items-center justify-between gap-2 text-xs text-gray-500">
           <div className="flex items-center gap-2">
-            <div className="w-6 h-6 rounded-full bg-recipe-rose flex items-center justify-center text-recipe-pink text-xs font-bold">
-              {recipe.uploadedBy.charAt(0).toUpperCase()}
-            </div>
+            <Link href={`/author/${encodeURIComponent(recipe.uploadedBy)}`}>
+              <div className="w-6 h-6 rounded-full bg-recipe-rose flex items-center justify-center text-recipe-pink text-xs font-bold hover:opacity-80">
+                {recipe.uploadedBy.charAt(0).toUpperCase()}
+              </div>
+            </Link>
             <span>
               Added by{" "}
-              <strong className="text-recipe-navy">{recipe.uploadedBy}</strong>
+              <Link href={`/author/${encodeURIComponent(recipe.uploadedBy)}`} className="font-bold text-recipe-navy hover:text-recipe-pink">
+                {recipe.uploadedBy}
+              </Link>
               {" · "}
               {formatDate(recipe.uploadedAt)}
             </span>

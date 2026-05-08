@@ -3,10 +3,11 @@
 import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { CATEGORIES } from "@/lib/categories";
-import { RecipeFormData, emptyFormData, Recipe } from "@/lib/types";
+import { RecipeFormData, emptyFormData, Recipe, Author } from "@/lib/types";
 import RecipeCardFull from "./RecipeCardFull";
+import AuthorInput from "./AuthorInput";
 
-type Step = "method-select" | "manual" | "upload" | "processing" | "preview" | "edit";
+type Step = "method-select" | "manual" | "upload" | "processing" | "preview" | "edit" | "saved";
 
 interface Props {
   defaultCategory?: string;
@@ -34,14 +35,29 @@ function formToPreviewRecipe(form: RecipeFormData): Recipe {
     cookTime: Number(form.cookTime) || 0,
     servings: Number(form.servings) || 1,
     source: form.source.trim() || undefined,
+    imageUrl: form.imageUrl || undefined,
     uploadedBy: form.uploadedBy || "Anonymous",
     uploadedAt: new Date().toISOString(),
   };
 }
 
+async function uploadFile(file: File): Promise<string | undefined> {
+  try {
+    const formData = new FormData();
+    formData.append("file", file);
+    const res = await fetch("/api/upload", { method: "POST", body: formData });
+    if (!res.ok) return undefined;
+    return (await res.json()).url;
+  } catch {
+    return undefined;
+  }
+}
+
 export default function AddRecipeModal({ defaultCategory, onClose }: Props) {
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const dishImageInputRef = useRef<HTMLInputElement>(null);
+  const profileImageInputRef = useRef<HTMLInputElement>(null);
 
   const [step, setStep] = useState<Step>("method-select");
   const [form, setForm] = useState<RecipeFormData>(() => buildInitialForm(defaultCategory));
@@ -52,11 +68,25 @@ export default function AddRecipeModal({ defaultCategory, onClose }: Props) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState<Partial<Record<keyof RecipeFormData, string>>>({});
 
+  // Dish image
+  const [dishImageFile, setDishImageFile] = useState<File | null>(null);
+  const [dishImagePreview, setDishImagePreview] = useState<string | null>(null);
+
+  // Profile creation
+  const [profileImageFile, setProfileImageFile] = useState<File | null>(null);
+  const [profileImagePreview, setProfileImagePreview] = useState<string | null>(null);
+  const [creatingProfile, setCreatingProfile] = useState(false);
+
+  // Authors for autocomplete
+  const [authors, setAuthors] = useState<Author[]>([]);
+
+  useEffect(() => {
+    fetch("/api/authors").then((r) => r.json()).then(setAuthors).catch(() => {});
+  }, []);
+
   // Close on Escape
   useEffect(() => {
-    const handler = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose();
-    };
+    const handler = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
     document.addEventListener("keydown", handler);
     return () => document.removeEventListener("keydown", handler);
   }, [onClose]);
@@ -67,7 +97,6 @@ export default function AddRecipeModal({ defaultCategory, onClose }: Props) {
     return () => { document.body.style.overflow = ""; };
   }, []);
 
-  // --- Form helpers ---
   const setField = <K extends keyof RecipeFormData>(key: K, value: RecipeFormData[K]) => {
     setForm((prev) => ({ ...prev, [key]: value }));
     setErrors((prev) => ({ ...prev, [key]: undefined }));
@@ -86,15 +115,11 @@ export default function AddRecipeModal({ defaultCategory, onClose }: Props) {
   };
 
   const removeListItem = (field: "ingredients" | "instructions", index: number) => {
-    setForm((prev) => ({
-      ...prev,
-      [field]: prev[field].filter((_, i) => i !== index),
-    }));
+    setForm((prev) => ({ ...prev, [field]: prev[field].filter((_, i) => i !== index) }));
   };
 
   const selectedCategory = CATEGORIES.find((c) => c.id === form.category);
 
-  // --- Validation ---
   const validateForm = (): boolean => {
     const newErrors: Partial<Record<keyof RecipeFormData, string>> = {};
     if (!form.title.trim()) newErrors.title = "Recipe title is required.";
@@ -110,18 +135,34 @@ export default function AddRecipeModal({ defaultCategory, onClose }: Props) {
     return Object.keys(newErrors).length === 0;
   };
 
-  // --- Image handling ---
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
     const reader = new FileReader();
     reader.onloadend = () => {
       const result = reader.result as string;
-      const base64 = result.split(",")[1];
-      setImageBase64(base64);
-      setImageMediaType(file.type as "image/jpeg" | "image/png" | "image/webp" | "image/gif");
+      setImageBase64(result.split(",")[1]);
+      setImageMediaType(file.type);
       setImagePreview(result);
     };
+    reader.readAsDataURL(file);
+  };
+
+  const handleDishImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setDishImageFile(file);
+    const reader = new FileReader();
+    reader.onloadend = () => setDishImagePreview(reader.result as string);
+    reader.readAsDataURL(file);
+  };
+
+  const handleProfileImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setProfileImageFile(file);
+    const reader = new FileReader();
+    reader.onloadend = () => setProfileImagePreview(reader.result as string);
     reader.readAsDataURL(file);
   };
 
@@ -137,7 +178,6 @@ export default function AddRecipeModal({ defaultCategory, onClose }: Props) {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Extraction failed");
-
       const extracted = data.recipe;
       setForm((prev) => ({
         ...prev,
@@ -156,25 +196,40 @@ export default function AddRecipeModal({ defaultCategory, onClose }: Props) {
     }
   };
 
-  // --- Submit ---
   const handleSubmit = async () => {
     setIsSubmitting(true);
     try {
+      let imageUrl = form.imageUrl;
+      if (dishImageFile) {
+        const url = await uploadFile(dishImageFile);
+        if (url) imageUrl = url;
+      }
+
       const res = await fetch("/api/recipes", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           ...form,
+          imageUrl: imageUrl || undefined,
           ingredients: form.ingredients.filter((s) => s.trim()),
           instructions: form.instructions.filter((s) => s.trim()),
         }),
       });
+
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
         throw new Error(data.error || `Save failed (${res.status})`);
       }
+
       router.refresh();
-      onClose();
+      const hasProfile = authors.some(
+        (a) => a.name.toLowerCase() === form.uploadedBy.toLowerCase()
+      );
+      if (hasProfile) {
+        onClose();
+      } else {
+        setStep("saved");
+      }
     } catch (err) {
       alert(err instanceof Error ? err.message : "Failed to save. Please try again.");
     } finally {
@@ -182,7 +237,24 @@ export default function AddRecipeModal({ defaultCategory, onClose }: Props) {
     }
   };
 
-  // --- Step titles ---
+  const handleCreateProfile = async () => {
+    setCreatingProfile(true);
+    try {
+      let imageUrl: string | undefined;
+      if (profileImageFile) imageUrl = await uploadFile(profileImageFile);
+      await fetch("/api/authors", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: form.uploadedBy, imageUrl }),
+      });
+    } catch {
+      // fail silently — just close
+    } finally {
+      setCreatingProfile(false);
+      onClose();
+    }
+  };
+
   const stepTitles: Record<Step, string> = {
     "method-select": "Add a Recipe",
     manual: "Recipe Details",
@@ -190,36 +262,26 @@ export default function AddRecipeModal({ defaultCategory, onClose }: Props) {
     processing: "Reading your recipe…",
     preview: "Preview Your Recipe",
     edit: "Edit Recipe",
+    saved: "Recipe Saved!",
   };
-
-  // ─── Render ─────────────────────────────────────────────────────────────────
 
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
-      {/* Backdrop */}
-      <div
-        className="absolute inset-0 bg-black/50 backdrop-blur-sm"
-        onClick={onClose}
-      />
+      <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} />
 
-      {/* Modal */}
       <div className="relative bg-white w-full sm:max-w-2xl max-h-[95vh] sm:max-h-[90vh] rounded-t-3xl sm:rounded-3xl shadow-2xl flex flex-col overflow-hidden">
-        {/* Mobile drag handle */}
         <div className="flex justify-center pt-3 pb-1 flex-shrink-0 sm:hidden">
           <div className="w-10 h-1 bg-gray-300 rounded-full" />
         </div>
 
-        {/* Header */}
         <div className="flex items-center justify-between px-5 py-3 border-b border-gray-100 flex-shrink-0">
           <div className="flex items-center gap-2">
-            {step !== "method-select" && (
+            {step !== "method-select" && step !== "saved" && (
               <button
                 onClick={() => {
                   if (step === "manual" || step === "upload") setStep("method-select");
                   else if (step === "processing") setStep("upload");
-                  else if (step === "preview") {
-                    setStep(imageBase64 ? "upload" : "manual");
-                  }
+                  else if (step === "preview") setStep(imageBase64 ? "upload" : "manual");
                   else if (step === "edit") setStep("preview");
                 }}
                 className="w-10 h-10 flex items-center justify-center rounded-full text-gray-500 hover:bg-gray-100"
@@ -245,10 +307,9 @@ export default function AddRecipeModal({ defaultCategory, onClose }: Props) {
           </button>
         </div>
 
-        {/* Body */}
         <div className="flex-1 overflow-y-auto">
 
-          {/* ── Step: Method select ──────────────────────────── */}
+          {/* ── Method select ── */}
           {step === "method-select" && (
             <div className="p-6">
               <p className="text-gray-500 text-sm mb-6 text-center">
@@ -269,7 +330,6 @@ export default function AddRecipeModal({ defaultCategory, onClose }: Props) {
                     </p>
                   </div>
                 </button>
-
                 <button
                   onClick={() => setStep("manual")}
                   className="group flex items-center sm:flex-col sm:items-center gap-5 sm:gap-4 p-5 sm:p-6 rounded-2xl border-2 border-gray-200 hover:border-recipe-navy hover:bg-recipe-cream transition-all text-left sm:text-center"
@@ -288,7 +348,7 @@ export default function AddRecipeModal({ defaultCategory, onClose }: Props) {
             </div>
           )}
 
-          {/* ── Step: Upload ─────────────────────────────────── */}
+          {/* ── Upload ── */}
           {step === "upload" && (
             <div className="p-6">
               {processingError && (
@@ -296,7 +356,6 @@ export default function AddRecipeModal({ defaultCategory, onClose }: Props) {
                   ⚠️ {processingError}
                 </div>
               )}
-
               <div
                 className="border-2 border-dashed border-gray-300 rounded-2xl p-8 text-center cursor-pointer hover:border-recipe-pink hover:bg-recipe-rose/10 transition-all"
                 onClick={() => fileInputRef.current?.click()}
@@ -304,33 +363,18 @@ export default function AddRecipeModal({ defaultCategory, onClose }: Props) {
                 {imagePreview ? (
                   <div className="space-y-3">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src={imagePreview}
-                      alt="Recipe preview"
-                      className="max-h-56 mx-auto rounded-xl object-contain"
-                    />
+                    <img src={imagePreview} alt="Recipe preview" className="max-h-56 mx-auto rounded-xl object-contain" />
                     <p className="text-sm text-gray-500">Click to change image</p>
                   </div>
                 ) : (
                   <div className="space-y-3">
                     <div className="text-5xl">📄</div>
-                    <p className="font-semibold text-gray-700">
-                      Click to upload a photo
-                    </p>
-                    <p className="text-sm text-gray-400">
-                      JPG, PNG, WEBP up to 20MB
-                    </p>
+                    <p className="font-semibold text-gray-700">Click to upload a photo</p>
+                    <p className="text-sm text-gray-400">JPG, PNG, WEBP up to 20MB</p>
                   </div>
                 )}
               </div>
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="image/*"
-                className="hidden"
-                onChange={handleFileChange}
-              />
-
+              <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleFileChange} />
               {imagePreview && (
                 <button
                   onClick={handleExtract}
@@ -339,7 +383,6 @@ export default function AddRecipeModal({ defaultCategory, onClose }: Props) {
                   ✨ Extract Recipe from Photo
                 </button>
               )}
-
               <button
                 onClick={() => setStep("manual")}
                 className="mt-3 w-full text-sm text-gray-500 hover:text-recipe-navy py-3 font-medium"
@@ -349,58 +392,42 @@ export default function AddRecipeModal({ defaultCategory, onClose }: Props) {
             </div>
           )}
 
-          {/* ── Step: Processing ─────────────────────────────── */}
+          {/* ── Processing ── */}
           {step === "processing" && (
             <div className="p-10 flex flex-col items-center justify-center gap-5 min-h-[300px]">
-              <div className="relative">
-                <div className="w-20 h-20 rounded-full bg-recipe-rose flex items-center justify-center text-4xl animate-bounce">
-                  🍳
-                </div>
+              <div className="w-20 h-20 rounded-full bg-recipe-rose flex items-center justify-center text-4xl animate-bounce">
+                🍳
               </div>
               <div className="text-center space-y-2">
                 <p className="font-bold text-recipe-navy text-lg">Reading your recipe…</p>
-                <p className="text-sm text-gray-500">
-                  Claude is extracting all the ingredients and steps
-                </p>
+                <p className="text-sm text-gray-500">Claude is extracting all the ingredients and steps</p>
               </div>
               <div className="flex gap-1.5">
                 {[0, 1, 2].map((i) => (
-                  <div
-                    key={i}
-                    className="w-2.5 h-2.5 rounded-full bg-recipe-pink opacity-70 animate-bounce"
-                    style={{ animationDelay: `${i * 0.15}s` }}
-                  />
+                  <div key={i} className="w-2.5 h-2.5 rounded-full bg-recipe-pink opacity-70 animate-bounce" style={{ animationDelay: `${i * 0.15}s` }} />
                 ))}
               </div>
             </div>
           )}
 
-          {/* ── Step: Manual / Edit form ──────────────────────── */}
+          {/* ── Manual / Edit form ── */}
           {(step === "manual" || step === "edit") && (
             <div className="p-6 space-y-5">
-              {/* Title */}
               <div>
-                <label className="block text-sm font-bold text-recipe-navy mb-1.5">
-                  Recipe Title *
-                </label>
+                <label className="block text-sm font-bold text-recipe-navy mb-1.5">Recipe Title *</label>
                 <input
                   type="text"
                   value={form.title}
                   onChange={(e) => setField("title", e.target.value)}
                   placeholder="e.g. Grandma's Famous Apple Pie"
-                  className={`w-full border rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-recipe-navy transition-colors ${
-                    errors.title ? "border-red-400 bg-red-50" : "border-gray-200 hover:border-gray-300"
-                  }`}
+                  className={`w-full border rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-recipe-navy transition-colors ${errors.title ? "border-red-400 bg-red-50" : "border-gray-200 hover:border-gray-300"}`}
                 />
                 {errors.title && <p className="mt-1 text-xs text-red-500">{errors.title}</p>}
               </div>
 
-              {/* Category + Subcategory */}
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-sm font-bold text-recipe-navy mb-1.5">
-                    Category *
-                  </label>
+                  <label className="block text-sm font-bold text-recipe-navy mb-1.5">Category *</label>
                   <select
                     value={form.category}
                     onChange={(e) => {
@@ -408,44 +435,32 @@ export default function AddRecipeModal({ defaultCategory, onClose }: Props) {
                       setField("category", e.target.value);
                       setField("subcategory", cat?.subcategories[0]?.id ?? "");
                     }}
-                    className={`w-full border rounded-xl px-3 py-3 text-sm focus:outline-none focus:border-recipe-navy ${
-                      errors.category ? "border-red-400 bg-red-50" : "border-gray-200"
-                    }`}
+                    className={`w-full border rounded-xl px-3 py-3 text-sm focus:outline-none focus:border-recipe-navy ${errors.category ? "border-red-400 bg-red-50" : "border-gray-200"}`}
                   >
                     <option value="">Select…</option>
                     {CATEGORIES.map((c) => (
-                      <option key={c.id} value={c.id}>
-                        {c.emoji} {c.name}
-                      </option>
+                      <option key={c.id} value={c.id}>{c.emoji} {c.name}</option>
                     ))}
                   </select>
                   {errors.category && <p className="mt-1 text-xs text-red-500">{errors.category}</p>}
                 </div>
-
                 <div>
-                  <label className="block text-sm font-bold text-recipe-navy mb-1.5">
-                    Subcategory *
-                  </label>
+                  <label className="block text-sm font-bold text-recipe-navy mb-1.5">Subcategory *</label>
                   <select
                     value={form.subcategory}
                     onChange={(e) => setField("subcategory", e.target.value)}
                     disabled={!form.category}
-                    className={`w-full border rounded-xl px-3 py-3 text-sm focus:outline-none focus:border-recipe-navy disabled:opacity-50 ${
-                      errors.subcategory ? "border-red-400 bg-red-50" : "border-gray-200"
-                    }`}
+                    className={`w-full border rounded-xl px-3 py-3 text-sm focus:outline-none focus:border-recipe-navy disabled:opacity-50 ${errors.subcategory ? "border-red-400 bg-red-50" : "border-gray-200"}`}
                   >
                     <option value="">Select…</option>
                     {selectedCategory?.subcategories.map((s) => (
-                      <option key={s.id} value={s.id}>
-                        {s.name}
-                      </option>
+                      <option key={s.id} value={s.id}>{s.name}</option>
                     ))}
                   </select>
                   {errors.subcategory && <p className="mt-1 text-xs text-red-500">{errors.subcategory}</p>}
                 </div>
               </div>
 
-              {/* Times + Servings */}
               <div className="grid grid-cols-3 gap-3">
                 {(["prepTime", "cookTime", "servings"] as const).map((field) => (
                   <div key={field}>
@@ -458,23 +473,16 @@ export default function AddRecipeModal({ defaultCategory, onClose }: Props) {
                       value={form[field]}
                       onChange={(e) => setField(field, e.target.value)}
                       placeholder="0"
-                      className={`w-full border rounded-xl px-3 py-3 text-sm focus:outline-none focus:border-recipe-navy ${
-                        errors[field] ? "border-red-400 bg-red-50" : "border-gray-200"
-                      }`}
+                      className={`w-full border rounded-xl px-3 py-3 text-sm focus:outline-none focus:border-recipe-navy ${errors[field] ? "border-red-400 bg-red-50" : "border-gray-200"}`}
                     />
                     {errors[field] && <p className="mt-1 text-xs text-red-500">{errors[field]}</p>}
                   </div>
                 ))}
               </div>
 
-              {/* Ingredients */}
               <div>
-                <label className="block text-sm font-bold text-recipe-navy mb-1.5">
-                  Ingredients *
-                </label>
-                {errors.ingredients && (
-                  <p className="mb-1.5 text-xs text-red-500">{errors.ingredients}</p>
-                )}
+                <label className="block text-sm font-bold text-recipe-navy mb-1.5">Ingredients *</label>
+                {errors.ingredients && <p className="mb-1.5 text-xs text-red-500">{errors.ingredients}</p>}
                 <div className="space-y-2">
                   {form.ingredients.map((ing, i) => (
                     <div key={i} className="flex gap-2">
@@ -482,42 +490,25 @@ export default function AddRecipeModal({ defaultCategory, onClose }: Props) {
                         type="text"
                         value={ing}
                         onChange={(e) => updateListItem("ingredients", i, e.target.value)}
-                        placeholder={`Ingredient ${i + 1} (e.g. 2 cups flour)`}
+                        placeholder={`Ingredient ${i + 1}`}
                         className="flex-1 border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-recipe-navy"
                       />
                       {form.ingredients.length > 1 && (
-                        <button
-                          onClick={() => removeListItem("ingredients", i)}
-                          className="px-2 text-gray-400 hover:text-red-400 rounded-lg"
-                        >
-                          ✕
-                        </button>
+                        <button onClick={() => removeListItem("ingredients", i)} className="px-2 text-gray-400 hover:text-red-400 rounded-lg">✕</button>
                       )}
                     </div>
                   ))}
-                  <button
-                    onClick={() => addListItem("ingredients")}
-                    className="text-sm text-recipe-navy font-semibold hover:text-recipe-pink flex items-center gap-1"
-                  >
-                    + Add ingredient
-                  </button>
+                  <button onClick={() => addListItem("ingredients")} className="text-sm text-recipe-navy font-semibold hover:text-recipe-pink flex items-center gap-1">+ Add ingredient</button>
                 </div>
               </div>
 
-              {/* Instructions */}
               <div>
-                <label className="block text-sm font-bold text-recipe-navy mb-1.5">
-                  Instructions *
-                </label>
-                {errors.instructions && (
-                  <p className="mb-1.5 text-xs text-red-500">{errors.instructions}</p>
-                )}
+                <label className="block text-sm font-bold text-recipe-navy mb-1.5">Instructions *</label>
+                {errors.instructions && <p className="mb-1.5 text-xs text-red-500">{errors.instructions}</p>}
                 <div className="space-y-2">
                   {form.instructions.map((step, i) => (
                     <div key={i} className="flex gap-2">
-                      <div className="flex-shrink-0 w-6 h-6 rounded-full bg-recipe-cream flex items-center justify-center text-xs font-bold text-recipe-navy mt-2">
-                        {i + 1}
-                      </div>
+                      <div className="flex-shrink-0 w-6 h-6 rounded-full bg-recipe-cream flex items-center justify-center text-xs font-bold text-recipe-navy mt-2">{i + 1}</div>
                       <textarea
                         value={step}
                         onChange={(e) => updateListItem("instructions", i, e.target.value)}
@@ -526,29 +517,17 @@ export default function AddRecipeModal({ defaultCategory, onClose }: Props) {
                         className="flex-1 border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-recipe-navy resize-none"
                       />
                       {form.instructions.length > 1 && (
-                        <button
-                          onClick={() => removeListItem("instructions", i)}
-                          className="px-2 text-gray-400 hover:text-red-400 rounded-lg self-start mt-2"
-                        >
-                          ✕
-                        </button>
+                        <button onClick={() => removeListItem("instructions", i)} className="px-2 text-gray-400 hover:text-red-400 rounded-lg self-start mt-2">✕</button>
                       )}
                     </div>
                   ))}
-                  <button
-                    onClick={() => addListItem("instructions")}
-                    className="text-sm text-recipe-navy font-semibold hover:text-recipe-pink flex items-center gap-1"
-                  >
-                    + Add step
-                  </button>
+                  <button onClick={() => addListItem("instructions")} className="text-sm text-recipe-navy font-semibold hover:text-recipe-pink flex items-center gap-1">+ Add step</button>
                 </div>
               </div>
 
-              {/* Source (optional) */}
               <div>
                 <label className="block text-sm font-bold text-recipe-navy mb-1.5">
-                  Original Source{" "}
-                  <span className="font-normal text-gray-400">(optional)</span>
+                  Original Source <span className="font-normal text-gray-400">(optional)</span>
                 </label>
                 <input
                   type="text"
@@ -559,69 +538,101 @@ export default function AddRecipeModal({ defaultCategory, onClose }: Props) {
                 />
               </div>
 
-              {/* Your name */}
               <div>
                 <label className="block text-sm font-bold text-recipe-navy mb-1.5">
-                  Your Name *
+                  Photo of the dish <span className="font-normal text-gray-400">(optional)</span>
                 </label>
-                <input
-                  type="text"
+                <div
+                  className="border-2 border-dashed border-gray-200 rounded-xl p-4 text-center cursor-pointer hover:border-recipe-pink hover:bg-recipe-rose/10 transition-all"
+                  onClick={() => dishImageInputRef.current?.click()}
+                >
+                  {dishImagePreview ? (
+                    <div className="space-y-2">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={dishImagePreview} alt="Dish preview" className="max-h-40 mx-auto rounded-lg object-contain" />
+                      <p className="text-xs text-gray-500">Click to change</p>
+                    </div>
+                  ) : (
+                    <p className="text-sm text-gray-400">Click to upload a photo of the finished dish</p>
+                  )}
+                </div>
+                <input ref={dishImageInputRef} type="file" accept="image/*" className="hidden" onChange={handleDishImageChange} />
+              </div>
+
+              <div>
+                <label className="block text-sm font-bold text-recipe-navy mb-1.5">Your Name *</label>
+                <AuthorInput
                   value={form.uploadedBy}
-                  onChange={(e) => setField("uploadedBy", e.target.value)}
-                  placeholder="e.g. Aunt Carol"
-                  className={`w-full border rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-recipe-navy ${
-                    errors.uploadedBy ? "border-red-400 bg-red-50" : "border-gray-200"
-                  }`}
+                  onChange={(name) => setField("uploadedBy", name)}
+                  authors={authors}
+                  error={errors.uploadedBy}
                 />
-                {errors.uploadedBy && (
-                  <p className="mt-1 text-xs text-red-500">{errors.uploadedBy}</p>
-                )}
               </div>
             </div>
           )}
 
-          {/* ── Step: Preview ─────────────────────────────────── */}
+          {/* ── Preview ── */}
           {step === "preview" && (
             <div className="p-4 sm:p-6 space-y-5">
               <p className="text-sm text-gray-500 text-center">
                 Here&apos;s how your recipe card will look. Does everything look right?
               </p>
 
-              {/* Category/subcategory selector if not set (photo upload flow) */}
-              {(!form.category || !form.subcategory) && (
-                <div className="bg-sky-50 border border-sky-200 rounded-xl p-4 space-y-3">
-                  <p className="text-sm font-bold text-recipe-navy">Which category does this belong to? *</p>
-                  <div className="grid grid-cols-2 gap-3">
-                    <select
-                      value={form.category}
-                      onChange={(e) => {
-                        const cat = CATEGORIES.find((c) => c.id === e.target.value);
-                        setField("category", e.target.value);
-                        setField("subcategory", cat?.subcategories[0]?.id ?? "");
-                      }}
-                      className="w-full border border-gray-300 rounded-xl px-3 py-3 text-sm focus:outline-none focus:border-recipe-navy bg-white"
-                    >
-                      <option value="">Category…</option>
-                      {CATEGORIES.map((c) => (
-                        <option key={c.id} value={c.id}>{c.name}</option>
-                      ))}
-                    </select>
-                    <select
-                      value={form.subcategory}
-                      onChange={(e) => setField("subcategory", e.target.value)}
-                      disabled={!form.category}
-                      className="w-full border border-gray-300 rounded-xl px-3 py-3 text-sm focus:outline-none focus:border-recipe-navy bg-white disabled:opacity-50"
-                    >
-                      <option value="">Subcategory…</option>
-                      {selectedCategory?.subcategories.map((s) => (
-                        <option key={s.id} value={s.id}>{s.name}</option>
-                      ))}
-                    </select>
-                  </div>
+              {/* Category/subcategory — always visible at top of preview */}
+              <div className="bg-sky-50 border border-sky-200 rounded-xl p-4 space-y-3">
+                <p className="text-sm font-bold text-recipe-navy">Category</p>
+                <div className="grid grid-cols-2 gap-3">
+                  <select
+                    value={form.category}
+                    onChange={(e) => {
+                      const cat = CATEGORIES.find((c) => c.id === e.target.value);
+                      setField("category", e.target.value);
+                      setField("subcategory", cat?.subcategories[0]?.id ?? "");
+                    }}
+                    className="w-full border border-gray-300 rounded-xl px-3 py-3 text-sm focus:outline-none focus:border-recipe-navy bg-white"
+                  >
+                    <option value="">Category…</option>
+                    {CATEGORIES.map((c) => (
+                      <option key={c.id} value={c.id}>{c.name}</option>
+                    ))}
+                  </select>
+                  <select
+                    value={form.subcategory}
+                    onChange={(e) => setField("subcategory", e.target.value)}
+                    disabled={!form.category}
+                    className="w-full border border-gray-300 rounded-xl px-3 py-3 text-sm focus:outline-none focus:border-recipe-navy bg-white disabled:opacity-50"
+                  >
+                    <option value="">Subcategory…</option>
+                    {selectedCategory?.subcategories.map((s) => (
+                      <option key={s.id} value={s.id}>{s.name}</option>
+                    ))}
+                  </select>
                 </div>
-              )}
+              </div>
 
-              {/* Scrollable recipe card preview */}
+              {/* Dish image upload */}
+              <div>
+                <label className="block text-sm font-bold text-recipe-navy mb-2">
+                  Photo of the dish <span className="font-normal text-gray-400">(optional)</span>
+                </label>
+                <div
+                  className="border-2 border-dashed border-gray-200 rounded-xl p-4 text-center cursor-pointer hover:border-recipe-pink hover:bg-recipe-rose/10 transition-all"
+                  onClick={() => dishImageInputRef.current?.click()}
+                >
+                  {dishImagePreview ? (
+                    <div className="space-y-2">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={dishImagePreview} alt="Dish preview" className="max-h-40 mx-auto rounded-lg object-contain" />
+                      <p className="text-xs text-gray-500">Click to change</p>
+                    </div>
+                  ) : (
+                    <p className="text-sm text-gray-400">Add a photo of the finished dish</p>
+                  )}
+                </div>
+                <input ref={dishImageInputRef} type="file" accept="image/*" className="hidden" onChange={handleDishImageChange} />
+              </div>
+
+              {/* Recipe card preview */}
               <div className="border-2 border-recipe-cream rounded-2xl overflow-hidden">
                 <RecipeCardFull recipe={formToPreviewRecipe(form)} showMeta={true} />
               </div>
@@ -631,13 +642,66 @@ export default function AddRecipeModal({ defaultCategory, onClose }: Props) {
                 <label className="block text-sm font-bold text-recipe-navy">
                   One last thing — who&apos;s adding this recipe? *
                 </label>
-                <input
-                  type="text"
+                <AuthorInput
                   value={form.uploadedBy}
-                  onChange={(e) => setField("uploadedBy", e.target.value)}
-                  placeholder="Your name (e.g. Aunt Carol)"
-                  className="w-full border border-gray-300 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-recipe-navy bg-white"
+                  onChange={(name) => setField("uploadedBy", name)}
+                  authors={authors}
                 />
+              </div>
+            </div>
+          )}
+
+          {/* ── Saved / Profile creation ── */}
+          {step === "saved" && (
+            <div className="p-6 space-y-5 text-center">
+              <div className="text-5xl mt-2">🎉</div>
+              <div>
+                <h3 className="font-playfair font-bold text-recipe-navy text-2xl mb-1">Recipe saved!</h3>
+                <p className="text-gray-500 text-sm">
+                  Want to set up a quick profile, {form.uploadedBy}?
+                </p>
+              </div>
+
+              <div className="text-left">
+                <label className="block text-sm font-bold text-recipe-navy mb-2">
+                  Profile photo <span className="font-normal text-gray-400">(optional)</span>
+                </label>
+                <div
+                  className="border-2 border-dashed border-gray-200 rounded-xl p-5 text-center cursor-pointer hover:border-recipe-pink hover:bg-recipe-rose/10 transition-all"
+                  onClick={() => profileImageInputRef.current?.click()}
+                >
+                  {profileImagePreview ? (
+                    <div className="flex flex-col items-center gap-2">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={profileImagePreview} alt="Profile" className="w-20 h-20 rounded-full object-cover border-4 border-white shadow-md" />
+                      <p className="text-xs text-gray-500">Click to change</p>
+                    </div>
+                  ) : (
+                    <div className="flex flex-col items-center gap-2">
+                      <div className="w-16 h-16 rounded-full bg-recipe-rose flex items-center justify-center text-recipe-pink text-2xl font-bold font-playfair">
+                        {form.uploadedBy.charAt(0).toUpperCase()}
+                      </div>
+                      <p className="text-sm text-gray-400">Click to upload a photo</p>
+                    </div>
+                  )}
+                </div>
+                <input ref={profileImageInputRef} type="file" accept="image/*" className="hidden" onChange={handleProfileImageChange} />
+              </div>
+
+              <div className="flex gap-3 pt-2">
+                <button
+                  onClick={onClose}
+                  className="flex-1 border-2 border-gray-200 text-gray-600 py-3 rounded-xl font-bold hover:border-gray-300"
+                >
+                  Skip
+                </button>
+                <button
+                  onClick={handleCreateProfile}
+                  disabled={creatingProfile}
+                  className="flex-1 bg-recipe-navy text-white py-3 rounded-xl font-bold hover:bg-opacity-90 disabled:opacity-50"
+                >
+                  {creatingProfile ? "Saving…" : "Create Profile"}
+                </button>
               </div>
             </div>
           )}
@@ -648,15 +712,12 @@ export default function AddRecipeModal({ defaultCategory, onClose }: Props) {
           <div className="flex-shrink-0 px-6 py-4 border-t border-gray-100 bg-white">
             {(step === "manual" || step === "edit") && (
               <button
-                onClick={() => {
-                  if (validateForm()) setStep("preview");
-                }}
+                onClick={() => { if (validateForm()) setStep("preview"); }}
                 className="w-full bg-recipe-navy text-white py-3.5 rounded-xl font-bold hover:bg-opacity-90 shadow-sm"
               >
                 Preview Recipe Card →
               </button>
             )}
-
             {step === "preview" && (
               <div className="flex flex-col sm:flex-row gap-3">
                 <button
@@ -677,7 +738,6 @@ export default function AddRecipeModal({ defaultCategory, onClose }: Props) {
           </div>
         )}
       </div>
-
     </div>
   );
 }
