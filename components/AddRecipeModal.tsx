@@ -269,7 +269,19 @@ export default function AddRecipeModal({ defaultCategory, editRecipe, onClose }:
     setCreatingProfile(true);
     try {
       let imageUrl: string | undefined;
-      if (profileImageFile) imageUrl = await uploadFile(profileImageFile);
+      if (profileImageFile) {
+        const formData = new FormData();
+        formData.append("file", profileImageFile);
+        const res = await fetch("/api/upload", { method: "POST", body: formData });
+        if (res.ok) {
+          imageUrl = (await res.json()).url;
+        } else if (res.status === 503) {
+          alert(
+            "Image storage isn't set up yet, so your profile photo couldn't be saved.\n\n" +
+            "To fix this: go to your Vercel dashboard → Storage → Create a Blob Store and connect it to your project. Then you can add your photo from Edit Profile."
+          );
+        }
+      }
       await fetch("/api/authors", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -277,7 +289,7 @@ export default function AddRecipeModal({ defaultCategory, editRecipe, onClose }:
       });
       localStorage.setItem("wfk_author_name", form.uploadedBy.trim());
     } catch {
-      // fail silently — just close
+      // profile creation is optional — still close
     } finally {
       setCreatingProfile(false);
       onClose();

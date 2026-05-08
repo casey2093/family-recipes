@@ -54,8 +54,15 @@ export default function AuthorPage() {
       const formData = new FormData();
       formData.append("file", file);
       const res = await fetch("/api/upload", { method: "POST", body: formData });
-      if (res.status === 503) {
-        alert("Photo upload is not available. Please set up Vercel Blob storage first.");
+      if (!res.ok) {
+        if (res.status === 503) {
+          alert(
+            "Image storage isn't set up yet.\n\n" +
+            "To enable photo uploads: go to your Vercel dashboard → Storage → Create a Blob Store and connect it to your project."
+          );
+        } else {
+          alert("Photo upload failed. Please try again.");
+        }
         return;
       }
       const data = await res.json();
@@ -69,7 +76,7 @@ export default function AuthorPage() {
     if (!editName.trim()) return;
     setSaving(true);
     try {
-      await fetch("/api/authors", {
+      const res = await fetch("/api/authors", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -78,6 +85,10 @@ export default function AuthorPage() {
           originalName: author?.name ?? name,
         }),
       });
+      if (!res.ok) {
+        alert("Failed to save profile. Please try again.");
+        return;
+      }
       setAuthor((prev) => ({
         ...(prev ?? { id: "", createdAt: new Date().toISOString() }),
         name: editName.trim(),
