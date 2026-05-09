@@ -21,7 +21,7 @@ function recipeToFormData(recipe: Recipe): RecipeFormData {
 }
 import RecipeCardFull from "./RecipeCardFull";
 import AuthorInput from "./AuthorInput";
-import { compressImage } from "@/lib/compressImage";
+import { compressImage, checkUploadSize } from "@/lib/compressImage";
 
 type Step = "method-select" | "manual" | "upload" | "processing" | "preview" | "edit" | "saved";
 
@@ -58,16 +58,21 @@ function formToPreviewRecipe(form: RecipeFormData): Recipe {
   };
 }
 
-async function uploadFile(file: File): Promise<string | undefined> {
+async function uploadFile(file: File): Promise<{ url?: string; error?: string }> {
   try {
     const compressed = await compressImage(file);
+    const sizeError = checkUploadSize(compressed);
+    if (sizeError) return { error: sizeError };
     const formData = new FormData();
     formData.append("file", compressed);
     const res = await fetch("/api/upload", { method: "POST", body: formData });
-    if (!res.ok) return undefined;
-    return (await res.json()).url;
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}));
+      return { error: data.error ?? "Photo upload failed." };
+    }
+    return { url: (await res.json()).url };
   } catch {
-    return undefined;
+    return { error: "Photo upload failed. Please try a different image." };
   }
 }
 
@@ -223,8 +228,12 @@ export default function AddRecipeModal({ defaultCategory, editRecipe, onClose }:
     try {
       let imageUrl = form.imageUrl;
       if (dishImageFile) {
-        const url = await uploadFile(dishImageFile);
-        if (url) imageUrl = url;
+        const result = await uploadFile(dishImageFile);
+        if (result.error) {
+          alert(result.error);
+          return;
+        }
+        if (result.url) imageUrl = result.url;
       }
 
       const payload = {
@@ -273,15 +282,11 @@ export default function AddRecipeModal({ defaultCategory, editRecipe, onClose }:
     try {
       let imageUrl: string | undefined;
       if (profileImageFile) {
-        const compressed = await compressImage(profileImageFile);
-        const formData = new FormData();
-        formData.append("file", compressed);
-        const res = await fetch("/api/upload", { method: "POST", body: formData });
-        if (res.ok) {
-          imageUrl = (await res.json()).url;
+        const result = await uploadFile(profileImageFile);
+        if (result.error) {
+          alert(result.error + "\n\nYour recipe was saved — you can add a profile photo later from your author page.");
         } else {
-          const data = await res.json().catch(() => ({}));
-          alert((data.error ?? "Photo upload failed.") + "\n\nYour recipe was saved — you can add a profile photo later from your author page.");
+          imageUrl = result.url;
         }
       }
       await fetch("/api/authors", {
