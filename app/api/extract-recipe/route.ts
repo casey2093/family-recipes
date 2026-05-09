@@ -80,7 +80,7 @@ export async function POST(request: Request) {
           role: "user",
           content: [
             ...imageBlocks,
-            { type: "text", text: `${preamble}\n\n${EXTRACT_PROMPT}` },
+            { type: "text" as const, text: `${preamble}\n\n${EXTRACT_PROMPT}` },
           ],
         },
       ],
