@@ -189,7 +189,8 @@ export default function AddRecipeModal({ defaultCategory, editRecipe, onClose }:
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ images: recipeImages.map(({ base64, mediaType }) => ({ base64, mediaType })) }),
       });
-      let data: { error?: string; recipe?: unknown };
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      let data: { error?: string; recipe?: any };
       try {
         data = await res.json();
       } catch {
