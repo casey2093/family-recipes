@@ -41,7 +41,7 @@ export default function Navigation() {
             <img
               src="/family-portrait.png"
               alt=""
-              className="hidden sm:block w-auto select-none"
+              className="block w-auto select-none"
               style={{
                 filter: "url(#wfk-navy-filter)",
                 height: "58px",
@@ -50,7 +50,7 @@ export default function Navigation() {
               onError={(e) => { e.currentTarget.style.display = "none"; }}
             />
             <span className="font-playfair font-bold text-recipe-navy text-lg leading-tight mb-2">
-              Ware Family<br className="hidden sm:block" />
+              Ware Family<br />
               <span className="text-recipe-pink"> Kitchen</span>
             </span>
           </Link>
