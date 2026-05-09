@@ -36,13 +36,17 @@ export default function Navigation() {
       <header className="fixed top-0 left-0 right-0 z-30 bg-white/95 backdrop-blur-sm border-b border-gray-100 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-4">
           {/* Logo */}
-          <Link href="/" className="flex items-end gap-2 flex-shrink-0 group h-16 outline-none focus:outline-none">
+          <Link href="/" className="flex items-end gap-2.5 flex-shrink-0 group h-16 outline-none focus:outline-none">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src="/family-portrait.png"
               alt=""
               className="hidden sm:block w-auto select-none"
-              style={{ filter: "url(#wfk-navy-filter)", height: "54px" }}
+              style={{
+                filter: "url(#wfk-navy-filter)",
+                height: "58px",
+                clipPath: "inset(0 10% 0 0)",
+              }}
               onError={(e) => { e.currentTarget.style.display = "none"; }}
             />
             <span className="font-playfair font-bold text-recipe-navy text-lg leading-tight mb-2">
