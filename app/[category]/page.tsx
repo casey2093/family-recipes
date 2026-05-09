@@ -3,8 +3,8 @@
 import { useState, useEffect } from "react";
 import { useParams, notFound } from "next/navigation";
 import Link from "next/link";
-import { Recipe } from "@/lib/types";
-import { getCategoryById, getSubcategoryName } from "@/lib/categories";
+import { Recipe, Author } from "@/lib/types";
+import { getCategoryById } from "@/lib/categories";
 import { useModal } from "@/context/ModalContext";
 import RecipeCardPreview from "@/components/RecipeCardPreview";
 import RecipeViewModal from "@/components/RecipeViewModal";
@@ -24,8 +24,10 @@ export default function CategoryPage() {
 
   const { openAddModal } = useModal();
   const [recipes, setRecipes] = useState<Recipe[]>([]);
+  const [authors, setAuthors] = useState<Author[]>([]);
   const [activeTab, setActiveTab] = useState<string>("all");
   const [activeAuthor, setActiveAuthor] = useState<string | null>(null);
+  const [sortBy, setSortBy] = useState<"newest" | "oldest" | "az" | "author">("newest");
   const [viewRecipe, setViewRecipe] = useState<Recipe | null>(null);
 
   useEffect(() => {
@@ -34,6 +36,10 @@ export default function CategoryPage() {
       .then((r) => r.json())
       .then(setRecipes)
       .catch(console.error);
+    fetch("/api/authors")
+      .then((r) => r.json())
+      .then(setAuthors)
+      .catch(() => {});
   }, [categoryId, category]);
 
   if (!category) {
@@ -53,13 +59,23 @@ export default function CategoryPage() {
   );
   const contributors = new Set(recipes.map((r) => r.uploadedBy)).size;
 
-  // ── Filtered recipes ─────────────────────────────────────────────────────────
+  // ── Filtered + sorted recipes ────────────────────────────────────────────────
   const authorList = [...new Set(recipes.map((r) => r.uploadedBy))].sort();
 
-  const visibleRecipes = recipes.filter((r) => {
+  const getAuthorProfile = (name: string) =>
+    authors.find((a) => a.name.toLowerCase() === name.toLowerCase());
+
+  const filtered = recipes.filter((r) => {
     const subMatch = activeTab === "all" || r.subcategory === activeTab;
     const authorMatch = !activeAuthor || r.uploadedBy === activeAuthor;
     return subMatch && authorMatch;
+  });
+
+  const visibleRecipes = [...filtered].sort((a, b) => {
+    if (sortBy === "oldest") return new Date(a.uploadedAt).getTime() - new Date(b.uploadedAt).getTime();
+    if (sortBy === "az") return a.title.localeCompare(b.title);
+    if (sortBy === "author") return a.uploadedBy.localeCompare(b.uploadedBy);
+    return new Date(b.uploadedAt).getTime() - new Date(a.uploadedAt).getTime(); // newest
   });
 
   const tabs = [
@@ -188,33 +204,68 @@ export default function CategoryPage() {
           </div>
         )}
 
-        {/* Author filter */}
-        {authorList.length > 1 && (
-          <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide pb-2 mb-8">
-            <span className="text-xs font-semibold text-gray-400 flex-shrink-0">By:</span>
-            <button
-              onClick={() => setActiveAuthor(null)}
-              className={`flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold transition-all ${
-                !activeAuthor
-                  ? "bg-recipe-navy text-white"
-                  : "bg-white text-gray-600 border border-gray-200 hover:border-gray-300"
-              }`}
-            >
-              Everyone
-            </button>
-            {authorList.map((author) => (
+        {/* Author filter + sort row */}
+        {recipes.length > 0 && (
+          <div className="flex flex-wrap items-center justify-between gap-3 mb-8">
+            {/* Author pills */}
+            <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide pb-1 flex-1 min-w-0">
+              <span className="text-xs font-semibold text-gray-400 flex-shrink-0">Chef:</span>
               <button
-                key={author}
-                onClick={() => setActiveAuthor(activeAuthor === author ? null : author)}
+                onClick={() => setActiveAuthor(null)}
                 className={`flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold transition-all ${
-                  activeAuthor === author
+                  !activeAuthor
                     ? "bg-recipe-navy text-white"
                     : "bg-white text-gray-600 border border-gray-200 hover:border-gray-300"
                 }`}
               >
-                {author}
+                Everyone
               </button>
-            ))}
+              {authorList.map((authorName) => {
+                const profile = getAuthorProfile(authorName);
+                const isActive = activeAuthor === authorName;
+                return (
+                  <button
+                    key={authorName}
+                    onClick={() => setActiveAuthor(isActive ? null : authorName)}
+                    className={`flex-shrink-0 flex items-center gap-1.5 pl-1 pr-3 py-1 rounded-full text-xs font-semibold transition-all ${
+                      isActive
+                        ? "bg-recipe-navy text-white"
+                        : "bg-white text-gray-600 border border-gray-200 hover:border-gray-300"
+                    }`}
+                  >
+                    <div className="w-5 h-5 rounded-full overflow-hidden flex-shrink-0">
+                      {profile?.imageUrl ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img src={profile.imageUrl} alt={authorName} className="w-full h-full object-cover" />
+                      ) : (
+                        <div
+                          className="w-full h-full flex items-center justify-center text-white text-xs font-bold"
+                          style={{ backgroundColor: isActive ? "rgba(255,255,255,0.3)" : category.accentColor }}
+                        >
+                          {authorName.charAt(0).toUpperCase()}
+                        </div>
+                      )}
+                    </div>
+                    {authorName}
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Sort dropdown */}
+            <div className="flex items-center gap-2 flex-shrink-0">
+              <span className="text-xs font-semibold text-gray-400">Sort:</span>
+              <select
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value as typeof sortBy)}
+                className="text-xs font-semibold text-gray-600 border border-gray-200 rounded-lg px-2 py-1.5 bg-white focus:outline-none focus:border-recipe-navy cursor-pointer"
+              >
+                <option value="newest">Newest first</option>
+                <option value="oldest">Oldest first</option>
+                <option value="az">A–Z by title</option>
+                <option value="author">By chef</option>
+              </select>
+            </div>
           </div>
         )}
 
