@@ -21,7 +21,7 @@ function recipeToFormData(recipe: Recipe): RecipeFormData {
 }
 import RecipeCardFull from "./RecipeCardFull";
 import AuthorInput from "./AuthorInput";
-import { compressImage, checkUploadSize } from "@/lib/compressImage";
+import { uploadImage } from "@/lib/clientUpload";
 
 type Step = "method-select" | "manual" | "upload" | "processing" | "preview" | "edit" | "saved";
 
@@ -58,23 +58,6 @@ function formToPreviewRecipe(form: RecipeFormData): Recipe {
   };
 }
 
-async function uploadFile(file: File): Promise<{ url?: string; error?: string }> {
-  try {
-    const compressed = await compressImage(file);
-    const sizeError = checkUploadSize(compressed);
-    if (sizeError) return { error: sizeError };
-    const formData = new FormData();
-    formData.append("file", compressed);
-    const res = await fetch("/api/upload", { method: "POST", body: formData });
-    if (!res.ok) {
-      const data = await res.json().catch(() => ({}));
-      return { error: data.error ?? "Photo upload failed." };
-    }
-    return { url: (await res.json()).url };
-  } catch {
-    return { error: "Photo upload failed. Please try a different image." };
-  }
-}
 
 export default function AddRecipeModal({ defaultCategory, editRecipe, onClose }: Props) {
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -228,7 +211,7 @@ export default function AddRecipeModal({ defaultCategory, editRecipe, onClose }:
     try {
       let imageUrl = form.imageUrl;
       if (dishImageFile) {
-        const result = await uploadFile(dishImageFile);
+        const result = await uploadImage(dishImageFile);
         if (result.error) {
           alert(result.error);
           return;
@@ -282,7 +265,7 @@ export default function AddRecipeModal({ defaultCategory, editRecipe, onClose }:
     try {
       let imageUrl: string | undefined;
       if (profileImageFile) {
-        const result = await uploadFile(profileImageFile);
+        const result = await uploadImage(profileImageFile);
         if (result.error) {
           alert(result.error + "\n\nYour recipe was saved — you can add a profile photo later from your author page.");
         } else {

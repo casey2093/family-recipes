@@ -5,7 +5,7 @@ import { useParams } from "next/navigation";
 import Link from "next/link";
 import { Recipe, Author } from "@/lib/types";
 import { useModal } from "@/context/ModalContext";
-import { compressImage, checkUploadSize } from "@/lib/compressImage";
+import { uploadImage } from "@/lib/clientUpload";
 import RecipeCardPreview from "@/components/RecipeCardPreview";
 import RecipeViewModal from "@/components/RecipeViewModal";
 
@@ -52,18 +52,9 @@ export default function AuthorPage() {
     if (!file) return;
     setUploadingPhoto(true);
     try {
-      const compressed = await compressImage(file);
-      const sizeError = checkUploadSize(compressed);
-      if (sizeError) { alert(sizeError); return; }
-      const formData = new FormData();
-      formData.append("file", compressed);
-      const res = await fetch("/api/upload", { method: "POST", body: formData });
-      const data = await res.json().catch(() => ({}));
-      if (!res.ok) {
-        alert(data.error ?? "Photo upload failed. Please try a different image.");
-        return;
-      }
-      if (data.url) setEditImageUrl(data.url);
+      const result = await uploadImage(file);
+      if (result.error) { alert(result.error); return; }
+      if (result.url) setEditImageUrl(result.url);
     } finally {
       setUploadingPhoto(false);
     }
