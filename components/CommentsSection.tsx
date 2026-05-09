@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { Comment } from "@/lib/types";
+import { uploadImage } from "@/lib/clientUpload";
 
 function timeAgo(isoString: string): string {
   const diff = Date.now() - new Date(isoString).getTime();
@@ -15,38 +16,38 @@ function timeAgo(isoString: string): string {
   return `${days}d ago`;
 }
 
-async function uploadImage(file: File): Promise<string | undefined> {
-  try {
-    const form = new FormData();
-    form.append("file", file);
-    const res = await fetch("/api/upload", { method: "POST", body: form });
-    if (!res.ok) return undefined;
-    return (await res.json()).url;
-  } catch {
-    return undefined;
-  }
-}
-
 interface Props {
   recipeId: string;
+}
+
+interface ImagePreview {
+  file: File;
+  preview: string;
 }
 
 export default function CommentsSection({ recipeId }: Props) {
   const [comments, setComments] = useState<Comment[]>([]);
   const [newText, setNewText] = useState("");
   const [newAuthor, setNewAuthor] = useState("");
-  const [newImageFile, setNewImageFile] = useState<File | null>(null);
-  const [newImagePreview, setNewImagePreview] = useState<string | null>(null);
+  const [newImages, setNewImages] = useState<ImagePreview[]>([]);
   const [submitting, setSubmitting] = useState(false);
   const [replyingTo, setReplyingTo] = useState<string | null>(null);
   const [replyText, setReplyText] = useState("");
   const [replyAuthor, setReplyAuthor] = useState("");
+  const [replyImages, setReplyImages] = useState<ImagePreview[]>([]);
   const [likedIds, setLikedIds] = useState<string[]>([]);
+  const [myName, setMyName] = useState("");
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [deleteConfirmName, setDeleteConfirmName] = useState("");
+  const [deleteError, setDeleteError] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const replyFileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    setNewAuthor(localStorage.getItem("wfk_author_name") ?? "");
-    setReplyAuthor(localStorage.getItem("wfk_author_name") ?? "");
+    const name = localStorage.getItem("wfk_author_name") ?? "";
+    setMyName(name);
+    setNewAuthor(name);
+    setReplyAuthor(name);
     setLikedIds(JSON.parse(localStorage.getItem(`wfk_liked_${recipeId}`) ?? "[]"));
   }, [recipeId]);
 
@@ -57,13 +58,26 @@ export default function CommentsSection({ recipeId }: Props) {
       .catch(console.error);
   }, [recipeId]);
 
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    setNewImageFile(file);
-    const reader = new FileReader();
-    reader.onloadend = () => setNewImagePreview(reader.result as string);
-    reader.readAsDataURL(file);
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>, forReply = false) => {
+    const files = Array.from(e.target.files ?? []);
+    try { e.target.value = ""; } catch { /* iOS Safari */ }
+    files.forEach((file) => {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const preview: ImagePreview = { file, preview: reader.result as string };
+        if (forReply) {
+          setReplyImages((prev) => (prev.length < 4 ? [...prev, preview] : prev));
+        } else {
+          setNewImages((prev) => (prev.length < 4 ? [...prev, preview] : prev));
+        }
+      };
+      reader.readAsDataURL(file);
+    });
+  };
+
+  const removeImage = (index: number, forReply = false) => {
+    if (forReply) setReplyImages((prev) => prev.filter((_, i) => i !== index));
+    else setNewImages((prev) => prev.filter((_, i) => i !== index));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -71,22 +85,30 @@ export default function CommentsSection({ recipeId }: Props) {
     if (!newText.trim() || !newAuthor.trim()) return;
     setSubmitting(true);
     try {
-      let imageUrl: string | undefined;
-      if (newImageFile) imageUrl = await uploadImage(newImageFile);
+      const uploadedUrls = (
+        await Promise.all(newImages.map((img) => uploadImage(img.file)))
+      )
+        .filter((r) => r.url)
+        .map((r) => r.url as string);
 
       const res = await fetch("/api/comments", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ recipeId, author: newAuthor.trim(), text: newText.trim(), imageUrl }),
+        body: JSON.stringify({
+          recipeId,
+          author: newAuthor.trim(),
+          text: newText.trim(),
+          imageUrls: uploadedUrls,
+        }),
       });
 
       if (res.ok) {
         const comment = await res.json();
         setComments((prev) => [...prev, comment]);
         setNewText("");
-        setNewImageFile(null);
-        setNewImagePreview(null);
+        setNewImages([]);
         localStorage.setItem("wfk_author_name", newAuthor.trim());
+        setMyName(newAuthor.trim());
       }
     } finally {
       setSubmitting(false);
@@ -94,22 +116,36 @@ export default function CommentsSection({ recipeId }: Props) {
   };
 
   const handleLike = async (commentId: string) => {
-    if (likedIds.includes(commentId)) return;
+    const alreadyLiked = likedIds.includes(commentId);
+    const action = alreadyLiked ? "unlike" : "like";
     await fetch("/api/comments", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ action: "like", recipeId, commentId }),
+      body: JSON.stringify({ action, recipeId, commentId }),
     });
     setComments((prev) =>
-      prev.map((c) => (c.id === commentId ? { ...c, likes: c.likes + 1 } : c))
+      prev.map((c) =>
+        c.id === commentId
+          ? { ...c, likes: alreadyLiked ? Math.max(0, c.likes - 1) : c.likes + 1 }
+          : c
+      )
     );
-    const updated = [...likedIds, commentId];
+    const updated = alreadyLiked
+      ? likedIds.filter((id) => id !== commentId)
+      : [...likedIds, commentId];
     setLikedIds(updated);
     localStorage.setItem(`wfk_liked_${recipeId}`, JSON.stringify(updated));
   };
 
   const handleReply = async (commentId: string) => {
     if (!replyText.trim() || !replyAuthor.trim()) return;
+
+    const uploadedUrls = (
+      await Promise.all(replyImages.map((img) => uploadImage(img.file)))
+    )
+      .filter((r) => r.url)
+      .map((r) => r.url as string);
+
     const res = await fetch("/api/comments", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -119,6 +155,7 @@ export default function CommentsSection({ recipeId }: Props) {
         commentId,
         author: replyAuthor.trim(),
         text: replyText.trim(),
+        imageUrls: uploadedUrls,
       }),
     });
     if (res.ok) {
@@ -129,10 +166,38 @@ export default function CommentsSection({ recipeId }: Props) {
         )
       );
       setReplyText("");
+      setReplyImages([]);
       setReplyingTo(null);
       localStorage.setItem("wfk_author_name", replyAuthor.trim());
+      setMyName(replyAuthor.trim());
     }
   };
+
+  const startDelete = (commentId: string) => {
+    setDeletingId(commentId);
+    setDeleteConfirmName("");
+    setDeleteError("");
+  };
+
+  const confirmDelete = async () => {
+    if (!deletingId) return;
+    const comment = comments.find((c) => c.id === deletingId);
+    if (!comment) return;
+    if (deleteConfirmName.trim().toLowerCase() !== comment.author.toLowerCase()) {
+      setDeleteError("Name doesn't match. Please type your exact name.");
+      return;
+    }
+    await fetch(`/api/comments?recipeId=${recipeId}&commentId=${deletingId}`, {
+      method: "DELETE",
+    });
+    setComments((prev) => prev.filter((c) => c.id !== deletingId));
+    setDeletingId(null);
+  };
+
+  const allImages = (comment: Comment) => [
+    ...(comment.imageUrls ?? []),
+    ...(comment.imageUrl && !comment.imageUrls?.length ? [comment.imageUrl] : []),
+  ];
 
   return (
     <div className="mx-6 mb-6">
@@ -152,6 +217,37 @@ export default function CommentsSection({ recipeId }: Props) {
         )}
         {comments.map((comment) => (
           <div key={comment.id} className="bg-recipe-cream rounded-2xl p-4">
+            {/* Delete confirmation inline */}
+            {deletingId === comment.id && (
+              <div className="mb-3 p-3 bg-red-50 border border-red-200 rounded-xl text-sm">
+                <p className="font-semibold text-red-700 mb-2">
+                  Type your name to delete this comment
+                </p>
+                <input
+                  type="text"
+                  value={deleteConfirmName}
+                  onChange={(e) => { setDeleteConfirmName(e.target.value); setDeleteError(""); }}
+                  placeholder="Your name"
+                  className="w-full border border-red-300 rounded-lg px-3 py-1.5 text-sm mb-2 focus:outline-none focus:border-red-500 bg-white"
+                />
+                {deleteError && <p className="text-red-600 text-xs mb-2">{deleteError}</p>}
+                <div className="flex gap-2">
+                  <button
+                    onClick={confirmDelete}
+                    className="bg-red-500 text-white px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-red-600"
+                  >
+                    Delete
+                  </button>
+                  <button
+                    onClick={() => setDeletingId(null)}
+                    className="text-gray-500 px-3 py-1.5 rounded-lg text-xs font-semibold hover:bg-gray-100"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            )}
+
             <div className="flex items-center gap-2 mb-2">
               <Link href={`/author/${encodeURIComponent(comment.author)}`}>
                 <div className="w-7 h-7 rounded-full bg-recipe-rose flex items-center justify-center text-recipe-pink text-xs font-bold flex-shrink-0 hover:opacity-80">
@@ -165,17 +261,28 @@ export default function CommentsSection({ recipeId }: Props) {
                 {comment.author}
               </Link>
               <span className="text-xs text-gray-400">{timeAgo(comment.createdAt)}</span>
+              {myName && comment.author.toLowerCase() === myName.toLowerCase() && deletingId !== comment.id && (
+                <button
+                  onClick={() => startDelete(comment.id)}
+                  className="ml-auto text-gray-300 hover:text-red-400 transition-colors"
+                  title="Delete comment"
+                >
+                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                  </svg>
+                </button>
+              )}
             </div>
 
             <p className="text-sm text-gray-700 mb-2 leading-relaxed">{comment.text}</p>
 
-            {comment.imageUrl && (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src={comment.imageUrl}
-                alt="Comment image"
-                className="rounded-xl max-h-48 object-cover mb-2"
-              />
+            {allImages(comment).length > 0 && (
+              <div className={`grid gap-2 mb-2 ${allImages(comment).length > 1 ? "grid-cols-2" : "grid-cols-1 max-w-xs"}`}>
+                {allImages(comment).map((url, i) => (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img key={i} src={url} alt="Comment image" className="rounded-xl w-full max-h-48 object-cover" />
+                ))}
+              </div>
             )}
 
             <div className="flex items-center gap-4 text-xs">
@@ -190,9 +297,10 @@ export default function CommentsSection({ recipeId }: Props) {
                 ♥{comment.likes > 0 && ` ${comment.likes}`}
               </button>
               <button
-                onClick={() =>
-                  setReplyingTo(replyingTo === comment.id ? null : comment.id)
-                }
+                onClick={() => {
+                  setReplyingTo(replyingTo === comment.id ? null : comment.id);
+                  setReplyImages([]);
+                }}
                 className="text-gray-400 hover:text-recipe-navy font-semibold"
               >
                 Reply
@@ -208,20 +316,51 @@ export default function CommentsSection({ recipeId }: Props) {
                   placeholder="Your name"
                   className="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-recipe-navy bg-white"
                 />
-                <div className="flex gap-2">
+                <textarea
+                  value={replyText}
+                  onChange={(e) => setReplyText(e.target.value)}
+                  placeholder="Write a reply…"
+                  rows={2}
+                  className="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-recipe-navy bg-white resize-none"
+                />
+                {replyImages.length > 0 && (
+                  <div className="flex flex-wrap gap-2">
+                    {replyImages.map((img, i) => (
+                      <div key={i} className="relative">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img src={img.preview} alt="Preview" className="h-16 w-16 rounded-lg object-cover" />
+                        <button
+                          onClick={() => removeImage(i, true)}
+                          className="absolute -top-1.5 -right-1.5 w-4 h-4 bg-gray-700 text-white rounded-full text-xs flex items-center justify-center"
+                        >
+                          ✕
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => replyFileInputRef.current?.click()}
+                    className="text-xs text-gray-500 hover:text-recipe-navy flex items-center gap-1 font-medium"
+                  >
+                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                    Photo
+                  </button>
                   <input
-                    type="text"
-                    value={replyText}
-                    onChange={(e) => setReplyText(e.target.value)}
-                    placeholder="Write a reply…"
-                    className="flex-1 border border-gray-300 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-recipe-navy bg-white"
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter") handleReply(comment.id);
-                    }}
+                    ref={replyFileInputRef}
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    className="hidden"
+                    onChange={(e) => handleImageChange(e, true)}
                   />
                   <button
                     onClick={() => handleReply(comment.id)}
-                    className="bg-recipe-navy text-white px-3 py-2 rounded-xl text-sm font-bold hover:bg-opacity-90"
+                    className="ml-auto bg-recipe-navy text-white px-3 py-1.5 rounded-xl text-xs font-bold hover:bg-opacity-90"
                   >
                     Post
                   </button>
@@ -230,7 +369,7 @@ export default function CommentsSection({ recipeId }: Props) {
             )}
 
             {comment.replies.length > 0 && (
-              <div className="mt-3 space-y-2 pl-4 border-l-2 border-gray-200">
+              <div className="mt-3 space-y-3 pl-4 border-l-2 border-gray-200">
                 {comment.replies.map((reply) => (
                   <div key={reply.id}>
                     <div className="flex items-center gap-2 mb-0.5">
@@ -243,6 +382,14 @@ export default function CommentsSection({ recipeId }: Props) {
                       <span className="text-xs text-gray-400">{timeAgo(reply.createdAt)}</span>
                     </div>
                     <p className="text-xs text-gray-700 leading-relaxed">{reply.text}</p>
+                    {reply.imageUrls && reply.imageUrls.length > 0 && (
+                      <div className={`grid gap-1.5 mt-1.5 ${reply.imageUrls.length > 1 ? "grid-cols-2" : "grid-cols-1 max-w-[12rem]"}`}>
+                        {reply.imageUrls.map((url, i) => (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img key={i} src={url} alt="Reply image" className="rounded-lg w-full max-h-36 object-cover" />
+                        ))}
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>
@@ -269,16 +416,20 @@ export default function CommentsSection({ recipeId }: Props) {
           className="w-full border border-gray-300 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-recipe-navy bg-white resize-none"
         />
 
-        {newImagePreview && (
-          <div className="relative inline-block">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={newImagePreview} alt="Preview" className="h-24 rounded-xl object-cover" />
-            <button
-              onClick={() => { setNewImageFile(null); setNewImagePreview(null); }}
-              className="absolute -top-2 -right-2 w-5 h-5 bg-gray-700 text-white rounded-full text-xs flex items-center justify-center"
-            >
-              ✕
-            </button>
+        {newImages.length > 0 && (
+          <div className="flex flex-wrap gap-2">
+            {newImages.map((img, i) => (
+              <div key={i} className="relative">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={img.preview} alt="Preview" className="h-20 w-20 rounded-xl object-cover" />
+                <button
+                  onClick={() => removeImage(i)}
+                  className="absolute -top-2 -right-2 w-5 h-5 bg-gray-700 text-white rounded-full text-xs flex items-center justify-center"
+                >
+                  ✕
+                </button>
+              </div>
+            ))}
           </div>
         )}
 
@@ -291,14 +442,15 @@ export default function CommentsSection({ recipeId }: Props) {
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
             </svg>
-            Add photo
+            Add photos
           </button>
           <input
             ref={fileInputRef}
             type="file"
             accept="image/*"
+            multiple
             className="hidden"
-            onChange={handleImageChange}
+            onChange={(e) => handleImageChange(e)}
           />
           <button
             onClick={handleSubmit}

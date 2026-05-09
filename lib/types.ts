@@ -33,7 +33,7 @@ export const emptyFormData: RecipeFormData = {
   category: "",
   subcategory: "",
   ingredients: [""],
-  instructions: [""],
+  instructions: ["", ""],
   prepTime: "",
   cookTime: "",
   servings: "",
@@ -53,6 +53,7 @@ export interface Reply {
   id: string;
   author: string;
   text: string;
+  imageUrls?: string[];
   createdAt: string;
 }
 
@@ -62,6 +63,7 @@ export interface Comment {
   author: string;
   text: string;
   imageUrl?: string;
+  imageUrls?: string[];
   likes: number;
   replies: Reply[];
   createdAt: string;

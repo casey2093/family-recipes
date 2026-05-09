@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import { Recipe, Author } from "@/lib/types";
+import { CATEGORIES } from "@/lib/categories";
 import { useModal } from "@/context/ModalContext";
 import { uploadImage } from "@/lib/clientUpload";
 import RecipeCardPreview from "@/components/RecipeCardPreview";
@@ -25,6 +26,11 @@ export default function AuthorPage() {
   const [saving, setSaving] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // Filters
+  const [search, setSearch] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("");
+  const [selectedSubcategory, setSelectedSubcategory] = useState("");
+
   useEffect(() => {
     Promise.all([
       fetch("/api/authors").then((r) => r.json()),
@@ -40,6 +46,17 @@ export default function AuthorPage() {
       })
       .catch(() => setLoading(false));
   }, [name]);
+
+  useEffect(() => { setSelectedSubcategory(""); }, [selectedCategory]);
+
+  const selectedCategoryData = CATEGORIES.find((c) => c.id === selectedCategory);
+
+  const filtered = recipes.filter((r) => {
+    if (search && !r.title.toLowerCase().includes(search.toLowerCase())) return false;
+    if (selectedCategory && r.category !== selectedCategory) return false;
+    if (selectedSubcategory && r.subcategory !== selectedSubcategory) return false;
+    return true;
+  });
 
   const startEditing = () => {
     setEditName(author?.name ?? name);
@@ -73,10 +90,7 @@ export default function AuthorPage() {
           originalName: author?.name ?? name,
         }),
       });
-      if (!res.ok) {
-        alert("Failed to save profile. Please try again.");
-        return;
-      }
+      if (!res.ok) { alert("Failed to save profile. Please try again."); return; }
       setAuthor((prev) => ({
         ...(prev ?? { id: "", createdAt: new Date().toISOString() }),
         name: editName.trim(),
@@ -88,9 +102,11 @@ export default function AuthorPage() {
     }
   };
 
-  if (loading) {
-    return <div className="pt-32 text-center text-gray-400">Loading…</div>;
-  }
+  const handleDelete = (id: string) => {
+    setRecipes((prev) => prev.filter((r) => r.id !== id));
+  };
+
+  if (loading) return <div className="pt-32 text-center text-gray-400">Loading…</div>;
 
   return (
     <>
@@ -98,6 +114,8 @@ export default function AuthorPage() {
         <div className="max-w-6xl mx-auto px-4 sm:px-6">
           <nav className="flex items-center gap-2 text-sm text-gray-500 mb-6">
             <Link href="/" className="hover:text-recipe-navy font-medium">Home</Link>
+            <span>›</span>
+            <Link href="/authors" className="hover:text-recipe-navy font-medium">Authors</Link>
             <span>›</span>
             <span className="font-semibold text-recipe-navy">{name}</span>
           </nav>
@@ -193,12 +211,56 @@ export default function AuthorPage() {
         </div>
       </div>
 
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 py-10">
-        {recipes.length > 0 ? (
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6">
+        {recipes.length > 0 && (
+          <div className="flex flex-wrap gap-3 mb-6">
+            <input
+              type="text"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search recipes…"
+              className="flex-1 min-w-[180px] border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-recipe-navy"
+            />
+            <select
+              value={selectedCategory}
+              onChange={(e) => setSelectedCategory(e.target.value)}
+              className="border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-recipe-navy bg-white"
+            >
+              <option value="">All categories</option>
+              {CATEGORIES.map((c) => (
+                <option key={c.id} value={c.id}>{c.name}</option>
+              ))}
+            </select>
+            {selectedCategoryData && (
+              <select
+                value={selectedSubcategory}
+                onChange={(e) => setSelectedSubcategory(e.target.value)}
+                className="border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-recipe-navy bg-white"
+              >
+                <option value="">All subcategories</option>
+                {selectedCategoryData.subcategories.map((s) => (
+                  <option key={s.id} value={s.id}>{s.name}</option>
+                ))}
+              </select>
+            )}
+          </div>
+        )}
+
+        {filtered.length > 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-            {recipes.map((recipe) => (
+            {filtered.map((recipe) => (
               <RecipeCardPreview key={recipe.id} recipe={recipe} onClick={setViewRecipe} />
             ))}
+          </div>
+        ) : recipes.length > 0 ? (
+          <div className="text-center py-16 text-gray-400">
+            <p className="text-lg font-semibold">No matches for your filters</p>
+            <button
+              onClick={() => { setSearch(""); setSelectedCategory(""); setSelectedSubcategory(""); }}
+              className="mt-3 text-sm text-recipe-pink hover:underline"
+            >
+              Clear filters
+            </button>
           </div>
         ) : (
           <div className="text-center py-20 text-gray-400">
@@ -216,7 +278,11 @@ export default function AuthorPage() {
       </button>
 
       {viewRecipe && (
-        <RecipeViewModal recipe={viewRecipe} onClose={() => setViewRecipe(null)} />
+        <RecipeViewModal
+          recipe={viewRecipe}
+          onClose={() => setViewRecipe(null)}
+          onDelete={handleDelete}
+        />
       )}
     </>
   );

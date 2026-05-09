@@ -30,9 +30,6 @@ export default function HomePage() {
       {/* Hero */}
       <section className="relative overflow-hidden bg-gradient-to-br from-white via-sky-50 to-blue-50 py-16 sm:py-24">
         <div className="max-w-4xl mx-auto px-6 text-center relative z-10">
-          <div className="inline-flex items-center gap-2 bg-white/70 backdrop-blur-sm px-4 py-1.5 rounded-full text-sm font-semibold text-recipe-navy mb-6 shadow-sm">
-            Ware Family Collection
-          </div>
           <h1 className="font-playfair font-bold text-recipe-navy leading-tight mb-4"
             style={{ fontSize: "clamp(2.5rem, 7vw, 4.5rem)" }}
           >

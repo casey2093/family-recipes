@@ -92,6 +92,23 @@ export async function POST(request: Request) {
   }
 }
 
+export async function DELETE(request: Request) {
+  try {
+    const { searchParams } = new URL(request.url);
+    const id = searchParams.get("id");
+    if (!id) return NextResponse.json({ error: "Recipe ID required" }, { status: 400 });
+    const recipes = await readRecipes();
+    if (!recipes.find((r) => r.id === id)) {
+      return NextResponse.json({ error: "Recipe not found" }, { status: 404 });
+    }
+    await writeRecipes(recipes.filter((r) => r.id !== id));
+    return NextResponse.json({ ok: true });
+  } catch (error) {
+    console.error("Error deleting recipe:", error);
+    return NextResponse.json({ error: "Failed to delete recipe" }, { status: 500 });
+  }
+}
+
 export async function PATCH(request: Request) {
   try {
     const body = await request.json();
