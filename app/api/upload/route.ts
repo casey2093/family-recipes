@@ -10,8 +10,8 @@ export async function POST(request: Request) {
     const form = await request.formData();
     const file = form.get("file") as File;
     if (!file) return NextResponse.json({ error: "No file provided" }, { status: 400 });
-    const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, "_");
-    const blob = await put(`uploads/${Date.now()}-${safeName}`, file, {
+    const ext = (file.name.split(".").pop() ?? "jpg").replace(/[^a-zA-Z0-9]/g, "").toLowerCase() || "jpg";
+    const blob = await put(`uploads/${crypto.randomUUID()}.${ext}`, file, {
       access: "public",
       token,
     });
