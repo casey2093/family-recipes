@@ -22,6 +22,7 @@ function recipeToFormData(recipe: Recipe): RecipeFormData {
 import RecipeCardFull from "./RecipeCardFull";
 import AuthorInput from "./AuthorInput";
 import { uploadImage } from "@/lib/clientUpload";
+import { compressImage } from "@/lib/compressImage";
 
 type Step = "method-select" | "manual" | "upload" | "processing" | "preview" | "edit" | "saved";
 
@@ -144,19 +145,20 @@ export default function AddRecipeModal({ defaultCategory, editRecipe, onClose }:
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files ?? []);
-    files.forEach((file) => {
+    try { e.target.value = ""; } catch { /* iOS Safari throws on file input value assignment */ }
+    files.forEach(async (file) => {
+      const compressed = await compressImage(file);
       const reader = new FileReader();
       reader.onloadend = () => {
         const result = reader.result as string;
         setRecipeImages((prev) => {
           if (prev.length >= 2) return prev;
-          return [...prev, { preview: result, base64: result.split(",")[1], mediaType: file.type || "image/jpeg" }];
+          return [...prev, { preview: result, base64: result.split(",")[1], mediaType: compressed.type || "image/jpeg" }];
         });
       };
       reader.onerror = () => {};
-      reader.readAsDataURL(file);
+      reader.readAsDataURL(compressed);
     });
-    try { e.target.value = ""; } catch { /* iOS Safari throws on programmatic file input value assignment */ }
   };
 
   const handleDishImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -187,7 +189,12 @@ export default function AddRecipeModal({ defaultCategory, editRecipe, onClose }:
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ images: recipeImages.map(({ base64, mediaType }) => ({ base64, mediaType })) }),
       });
-      const data = await res.json();
+      let data: { error?: string; recipe?: unknown };
+      try {
+        data = await res.json();
+      } catch {
+        throw new Error("The photo was too large to process. Please take a screenshot of the recipe card and try again.");
+      }
       if (!res.ok) throw new Error(data.error || "Extraction failed");
       const extracted = data.recipe;
       setForm((prev) => ({
