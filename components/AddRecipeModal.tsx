@@ -81,9 +81,7 @@ export default function AddRecipeModal({ defaultCategory, editRecipe, onClose }:
   const [form, setForm] = useState<RecipeFormData>(() =>
     editRecipe ? recipeToFormData(editRecipe) : buildInitialForm(defaultCategory)
   );
-  const [imagePreview, setImagePreview] = useState<string | null>(null);
-  const [imageBase64, setImageBase64] = useState<string | null>(null);
-  const [imageMediaType, setImageMediaType] = useState<string>("image/jpeg");
+  const [recipeImages, setRecipeImages] = useState<Array<{ preview: string; base64: string; mediaType: string }>>([]);
   const [processingError, setProcessingError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState<Partial<Record<keyof RecipeFormData, string>>>({});
@@ -157,16 +155,19 @@ export default function AddRecipeModal({ defaultCategory, editRecipe, onClose }:
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      const result = reader.result as string;
-      setImageBase64(result.split(",")[1]);
-      setImageMediaType(file.type);
-      setImagePreview(result);
-    };
-    reader.readAsDataURL(file);
+    const files = Array.from(e.target.files ?? []);
+    files.forEach((file) => {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const result = reader.result as string;
+        setRecipeImages((prev) => {
+          if (prev.length >= 2) return prev;
+          return [...prev, { preview: result, base64: result.split(",")[1], mediaType: file.type || "image/jpeg" }];
+        });
+      };
+      reader.readAsDataURL(file);
+    });
+    e.target.value = "";
   };
 
   const handleDishImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -188,14 +189,14 @@ export default function AddRecipeModal({ defaultCategory, editRecipe, onClose }:
   };
 
   const handleExtract = async () => {
-    if (!imageBase64) return;
+    if (recipeImages.length === 0) return;
     setStep("processing");
     setProcessingError(null);
     try {
       const res = await fetch("/api/extract-recipe", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ imageBase64, mediaType: imageMediaType }),
+        body: JSON.stringify({ images: recipeImages.map(({ base64, mediaType }) => ({ base64, mediaType })) }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Extraction failed");
@@ -278,11 +279,9 @@ export default function AddRecipeModal({ defaultCategory, editRecipe, onClose }:
         const res = await fetch("/api/upload", { method: "POST", body: formData });
         if (res.ok) {
           imageUrl = (await res.json()).url;
-        } else if (res.status === 503) {
-          alert(
-            "Image storage isn't set up yet, so your profile photo couldn't be saved.\n\n" +
-            "To fix this: go to your Vercel dashboard → Storage → Create a Blob Store and connect it to your project. Then you can add your photo from Edit Profile."
-          );
+        } else {
+          const data = await res.json().catch(() => ({}));
+          alert((data.error ?? "Photo upload failed.") + "\n\nYour recipe was saved — you can add a profile photo later from your author page.");
         }
       }
       await fetch("/api/authors", {
@@ -325,7 +324,7 @@ export default function AddRecipeModal({ defaultCategory, editRecipe, onClose }:
                 onClick={() => {
                   if (step === "manual" || step === "upload") setStep("method-select");
                   else if (step === "processing") setStep("upload");
-                  else if (step === "preview") setStep(imageBase64 ? "upload" : "manual");
+                  else if (step === "preview") setStep(recipeImages.length > 0 ? "upload" : "manual");
                   else if (step === "edit") setStep("preview");
                 }}
                 className="w-10 h-10 flex items-center justify-center rounded-full text-gray-500 hover:bg-gray-100"
@@ -400,31 +399,58 @@ export default function AddRecipeModal({ defaultCategory, editRecipe, onClose }:
                   ⚠️ {processingError}
                 </div>
               )}
-              <div
-                className="border-2 border-dashed border-gray-300 rounded-2xl p-8 text-center cursor-pointer hover:border-recipe-pink hover:bg-recipe-rose/10 transition-all"
-                onClick={() => fileInputRef.current?.click()}
-              >
-                {imagePreview ? (
-                  <div className="space-y-3">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={imagePreview} alt="Recipe preview" className="max-h-56 mx-auto rounded-xl object-contain" />
-                    <p className="text-sm text-gray-500">Click to change image</p>
-                  </div>
-                ) : (
-                  <div className="space-y-3">
-                    <div className="text-5xl">📄</div>
-                    <p className="font-semibold text-gray-700">Click to upload a photo</p>
-                    <p className="text-sm text-gray-400">JPG, PNG, WEBP up to 20MB</p>
-                  </div>
-                )}
-              </div>
-              <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleFileChange} />
-              {imagePreview && (
+
+              {/* Uploaded image previews */}
+              {recipeImages.length > 0 && (
+                <div className={`grid gap-3 mb-4 ${recipeImages.length === 2 ? "grid-cols-2" : "grid-cols-1 max-w-xs mx-auto"}`}>
+                  {recipeImages.map((img, i) => (
+                    <div key={i} className="relative rounded-xl overflow-hidden border border-gray-200 bg-gray-50">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={img.preview} alt={`Recipe side ${i + 1}`} className="w-full h-44 object-cover" />
+                      <div className="absolute top-2 left-2 bg-white/90 text-xs font-bold text-gray-600 px-2 py-0.5 rounded-full shadow-sm">
+                        Side {i + 1}
+                      </div>
+                      <button
+                        onClick={() => setRecipeImages((prev) => prev.filter((_, j) => j !== i))}
+                        className="absolute top-2 right-2 w-6 h-6 bg-white/90 rounded-full flex items-center justify-center text-gray-500 hover:text-red-500 shadow-sm text-xs"
+                        aria-label="Remove photo"
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Upload zone — hidden once 2 photos loaded */}
+              {recipeImages.length < 2 && (
+                <div
+                  className="border-2 border-dashed border-gray-300 rounded-2xl text-center cursor-pointer hover:border-recipe-pink hover:bg-recipe-rose/10 transition-all"
+                  style={{ padding: recipeImages.length === 0 ? "2rem" : "1rem 2rem" }}
+                  onClick={() => fileInputRef.current?.click()}
+                >
+                  {recipeImages.length === 0 ? (
+                    <div className="space-y-3">
+                      <div className="text-5xl">📄</div>
+                      <p className="font-semibold text-gray-700">Click to upload a photo</p>
+                      <p className="text-sm text-gray-400">You can add up to 2 photos — great for double-sided cards</p>
+                    </div>
+                  ) : (
+                    <div className="flex items-center justify-center gap-2 text-sm font-semibold text-gray-500">
+                      <span className="text-lg">📄</span> Add the other side of the card
+                    </div>
+                  )}
+                </div>
+              )}
+
+              <input ref={fileInputRef} type="file" accept="image/*" multiple className="hidden" onChange={handleFileChange} />
+
+              {recipeImages.length > 0 && (
                 <button
                   onClick={handleExtract}
-                  className="mt-5 w-full bg-recipe-pink text-white py-3.5 rounded-xl font-bold hover:bg-opacity-90 shadow-sm"
+                  className="mt-4 w-full bg-recipe-pink text-white py-3.5 rounded-xl font-bold hover:bg-opacity-90 shadow-sm"
                 >
-                  ✨ Extract Recipe from Photo
+                  ✨ Extract Recipe from Photo{recipeImages.length > 1 ? "s" : ""}
                 </button>
               )}
               <button

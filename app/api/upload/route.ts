@@ -1,10 +1,26 @@
 import { NextResponse } from "next/server";
 import { put } from "@vercel/blob";
 
+function friendlyError(error: unknown): string {
+  const msg = (error instanceof Error ? error.message : String(error)).toLowerCase();
+  if (msg.includes("private store"))
+    return "Image storage isn't set up correctly. Please contact the site owner.";
+  if (msg.includes("pattern") || msg.includes("token") || msg.includes("invalid"))
+    return "There's a configuration problem with image storage. Please contact the site owner.";
+  if (msg.includes("too large") || msg.includes("size") || msg.includes("limit"))
+    return "This photo is too large. Please try a smaller image.";
+  if (msg.includes("network") || msg.includes("connect") || msg.includes("fetch"))
+    return "Couldn't connect to image storage. Check your internet and try again.";
+  return "Upload failed. Please try a different photo, or take a screenshot of it instead.";
+}
+
 export async function POST(request: Request) {
   const token = process.env.BLOB_READ_WRITE_TOKEN;
   if (!token) {
-    return NextResponse.json({ error: "Image storage not configured" }, { status: 503 });
+    return NextResponse.json(
+      { error: "Image uploads aren't set up yet. Contact the site owner to enable this." },
+      { status: 503 }
+    );
   }
   try {
     const form = await request.formData();
@@ -17,8 +33,7 @@ export async function POST(request: Request) {
     });
     return NextResponse.json({ url: blob.url });
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Unknown error";
-    console.error("Upload error:", message);
-    return NextResponse.json({ error: message }, { status: 500 });
+    console.error("Upload error:", error instanceof Error ? error.message : error);
+    return NextResponse.json({ error: friendlyError(error) }, { status: 500 });
   }
 }

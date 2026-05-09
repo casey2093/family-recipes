@@ -58,14 +58,7 @@ export default function AuthorPage() {
       const res = await fetch("/api/upload", { method: "POST", body: formData });
       const data = await res.json();
       if (!res.ok) {
-        if (res.status === 503) {
-          alert(
-            "Image storage isn't set up yet.\n\n" +
-            "To enable photo uploads: go to your Vercel dashboard → Storage → Create a Blob Store and connect it to your project."
-          );
-        } else {
-          alert(`Photo upload failed: ${data.error ?? res.status}`);
-        }
+        alert(data.error ?? "Photo upload failed. Please try a different image.");
         return;
       }
       if (data.url) setEditImageUrl(data.url);
