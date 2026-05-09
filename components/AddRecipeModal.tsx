@@ -21,6 +21,7 @@ function recipeToFormData(recipe: Recipe): RecipeFormData {
 }
 import RecipeCardFull from "./RecipeCardFull";
 import AuthorInput from "./AuthorInput";
+import { compressImage } from "@/lib/compressImage";
 
 type Step = "method-select" | "manual" | "upload" | "processing" | "preview" | "edit" | "saved";
 
@@ -59,8 +60,9 @@ function formToPreviewRecipe(form: RecipeFormData): Recipe {
 
 async function uploadFile(file: File): Promise<string | undefined> {
   try {
+    const compressed = await compressImage(file);
     const formData = new FormData();
-    formData.append("file", file);
+    formData.append("file", compressed);
     const res = await fetch("/api/upload", { method: "POST", body: formData });
     if (!res.ok) return undefined;
     return (await res.json()).url;
@@ -270,8 +272,9 @@ export default function AddRecipeModal({ defaultCategory, editRecipe, onClose }:
     try {
       let imageUrl: string | undefined;
       if (profileImageFile) {
+        const compressed = await compressImage(profileImageFile);
         const formData = new FormData();
-        formData.append("file", profileImageFile);
+        formData.append("file", compressed);
         const res = await fetch("/api/upload", { method: "POST", body: formData });
         if (res.ok) {
           imageUrl = (await res.json()).url;

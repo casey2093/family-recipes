@@ -5,6 +5,7 @@ import { useParams } from "next/navigation";
 import Link from "next/link";
 import { Recipe, Author } from "@/lib/types";
 import { useModal } from "@/context/ModalContext";
+import { compressImage } from "@/lib/compressImage";
 import RecipeCardPreview from "@/components/RecipeCardPreview";
 import RecipeViewModal from "@/components/RecipeViewModal";
 
@@ -51,8 +52,9 @@ export default function AuthorPage() {
     if (!file) return;
     setUploadingPhoto(true);
     try {
+      const compressed = await compressImage(file);
       const formData = new FormData();
-      formData.append("file", file);
+      formData.append("file", compressed);
       const res = await fetch("/api/upload", { method: "POST", body: formData });
       const data = await res.json();
       if (!res.ok) {
