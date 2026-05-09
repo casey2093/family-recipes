@@ -360,7 +360,7 @@ export default function AddRecipeModal({ defaultCategory, editRecipe, onClose }:
               </p>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <button
-                  onClick={() => { setImageBase64(null); setImagePreview(null); setStep("upload"); }}
+                  onClick={() => { setRecipeImages([]); setStep("upload"); }}
                   className="group flex items-center sm:flex-col sm:items-center gap-5 sm:gap-4 p-5 sm:p-6 rounded-2xl border-2 border-gray-200 hover:border-recipe-pink hover:bg-recipe-rose/30 transition-all text-left sm:text-center"
                 >
                   <div className="w-16 h-16 rounded-2xl bg-recipe-rose flex items-center justify-center text-3xl flex-shrink-0 group-hover:scale-110 transition-transform">
