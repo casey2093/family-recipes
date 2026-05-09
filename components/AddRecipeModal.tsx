@@ -153,9 +153,10 @@ export default function AddRecipeModal({ defaultCategory, editRecipe, onClose }:
           return [...prev, { preview: result, base64: result.split(",")[1], mediaType: file.type || "image/jpeg" }];
         });
       };
+      reader.onerror = () => {};
       reader.readAsDataURL(file);
     });
-    e.target.value = "";
+    try { e.target.value = ""; } catch { /* iOS Safari throws on programmatic file input value assignment */ }
   };
 
   const handleDishImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
