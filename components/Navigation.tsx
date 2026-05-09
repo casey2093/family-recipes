@@ -18,10 +18,33 @@ export default function Navigation() {
 
   return (
     <>
+      {/* SVG filter: converts black lines → navy, white → transparent */}
+      <svg width="0" height="0" className="absolute overflow-hidden" aria-hidden="true">
+        <defs>
+          <filter id="wfk-navy-filter">
+            <feColorMatrix
+              type="matrix"
+              values="0 0 0 0 0.106
+                      0 0 0 0 0.227
+                      0 0 0 0 0.361
+                      -0.333 -0.333 -0.333 0 1"
+            />
+          </filter>
+        </defs>
+      </svg>
+
       <header className="fixed top-0 left-0 right-0 z-30 bg-white/95 backdrop-blur-sm border-b border-gray-100 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-4">
           {/* Logo */}
-          <Link href="/" className="flex items-center flex-shrink-0 group">
+          <Link href="/" className="flex items-center gap-2.5 flex-shrink-0 group">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/family-portrait.png"
+              alt=""
+              className="hidden sm:block h-10 w-auto"
+              style={{ filter: "url(#wfk-navy-filter)" }}
+              onError={(e) => { e.currentTarget.style.display = "none"; }}
+            />
             <span className="font-playfair font-bold text-recipe-navy text-lg leading-tight">
               Ware Family<br className="hidden sm:block" />
               <span className="text-recipe-pink"> Kitchen</span>
