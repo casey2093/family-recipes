@@ -6,30 +6,38 @@ import { usePathname } from "next/navigation";
 import { CATEGORIES } from "@/lib/categories";
 import { useModal } from "@/context/ModalContext";
 import { useAuth } from "@/context/AuthContext";
+import { useAuthors } from "@/context/AuthorsContext";
 
 export default function Navigation() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [categoriesOpen, setCategoriesOpen] = useState(false);
   const [mobileCategoriesOpen, setMobileCategoriesOpen] = useState(false);
+  const [profileOpen, setProfileOpen] = useState(false);
   const pathname = usePathname();
   const { openAddModal } = useModal();
   const { user, loading: authLoading, openAuthModal, logout } = useAuth();
+  const authorsMap = useAuthors();
   const categoriesRef = useRef<HTMLDivElement>(null);
+  const profileRef = useRef<HTMLDivElement>(null);
 
-  // Close dropdown on outside click
+  // Close dropdowns on outside click
   useEffect(() => {
     const handler = (e: MouseEvent) => {
       if (categoriesRef.current && !categoriesRef.current.contains(e.target as Node)) {
         setCategoriesOpen(false);
+      }
+      if (profileRef.current && !profileRef.current.contains(e.target as Node)) {
+        setProfileOpen(false);
       }
     };
     document.addEventListener("mousedown", handler);
     return () => document.removeEventListener("mousedown", handler);
   }, []);
 
-  // Close dropdown on route change
+  // Close dropdowns on route change
   useEffect(() => {
     setCategoriesOpen(false);
+    setProfileOpen(false);
     setMobileOpen(false);
   }, [pathname]);
 
@@ -151,7 +159,7 @@ export default function Navigation() {
           </nav>
 
           {/* Right side: Add Recipe + Auth + hamburger */}
-          <div className="flex items-center gap-2 flex-shrink-0">
+          <div className="flex items-center gap-4 flex-shrink-0">
             <button
               onClick={() => openAddModal()}
               className="hidden sm:flex items-center gap-1.5 bg-recipe-pink text-white px-4 py-2 rounded-full text-sm font-bold hover:bg-opacity-90 shadow-sm hover:shadow-md"
@@ -162,22 +170,60 @@ export default function Navigation() {
             {/* Auth area */}
             {!authLoading && (
               user ? (
-                <div className="hidden lg:flex items-center gap-2">
-                  <Link
-                    href={`/author/${encodeURIComponent(user.name)}`}
-                    className="flex items-center gap-1.5 text-sm font-semibold text-recipe-navy hover:text-recipe-pink transition-colors"
-                  >
-                    <div className="w-7 h-7 rounded-full bg-recipe-rose flex items-center justify-center text-recipe-pink text-xs font-bold">
-                      {user.name.charAt(0).toUpperCase()}
-                    </div>
-                    <span className="max-w-[100px] truncate">{user.name}</span>
-                  </Link>
+                <div ref={profileRef} className="relative hidden lg:block">
+                  {/* Profile button */}
                   <button
-                    onClick={() => logout()}
-                    className="text-xs text-gray-400 hover:text-gray-600 font-medium px-2 py-1 rounded-full hover:bg-gray-100"
+                    onClick={() => setProfileOpen((o) => !o)}
+                    className="flex items-center gap-2 rounded-full hover:bg-recipe-cream px-2 py-1 transition-all"
                   >
-                    Sign out
+                    {authorsMap[user.name.toLowerCase()]?.imageUrl ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={authorsMap[user.name.toLowerCase()].imageUrl}
+                        alt={user.name}
+                        className="w-8 h-8 rounded-full object-cover flex-shrink-0"
+                      />
+                    ) : (
+                      <div className="w-8 h-8 rounded-full bg-recipe-rose flex items-center justify-center text-recipe-pink text-sm font-bold flex-shrink-0">
+                        {user.name.charAt(0).toUpperCase()}
+                      </div>
+                    )}
+                    <span className="text-sm font-semibold text-recipe-navy max-w-[100px] truncate">
+                      {user.name}
+                    </span>
+                    <svg
+                      className={`w-3.5 h-3.5 text-gray-400 transition-transform flex-shrink-0 ${profileOpen ? "rotate-180" : ""}`}
+                      fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                    >
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
                   </button>
+
+                  {/* Dropdown */}
+                  {profileOpen && (
+                    <div className="absolute right-0 top-full mt-2 w-44 bg-white rounded-2xl shadow-xl border border-gray-100 py-1.5 z-50">
+                      <Link
+                        href={`/author/${encodeURIComponent(user.name)}`}
+                        className="flex items-center gap-2.5 px-4 py-2.5 text-sm font-semibold text-recipe-navy hover:bg-recipe-cream transition-colors"
+                        onClick={() => setProfileOpen(false)}
+                      >
+                        <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                        </svg>
+                        My Profile
+                      </Link>
+                      <div className="mx-3 my-1 border-t border-gray-100" />
+                      <button
+                        onClick={() => { setProfileOpen(false); logout(); }}
+                        className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm font-semibold text-gray-500 hover:bg-gray-50 hover:text-red-500 transition-colors"
+                      >
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                        </svg>
+                        Sign Out
+                      </button>
+                    </div>
+                  )}
                 </div>
               ) : (
                 <button
