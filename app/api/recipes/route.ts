@@ -48,6 +48,7 @@ export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const category = searchParams.get("category");
   const uploadedBy = searchParams.get("uploadedBy");
+  const id = searchParams.get("id");
 
   const [recipes, stats] = await Promise.all([
     readRecipes(),
@@ -56,6 +57,7 @@ export async function GET(request: Request) {
 
   let filtered = category ? recipes.filter((r) => r.category === category) : recipes;
   if (uploadedBy) filtered = filtered.filter((r) => r.uploadedBy === uploadedBy);
+  if (id) filtered = filtered.filter((r) => r.id === id);
 
   filtered.sort(
     (a, b) => new Date(b.uploadedAt).getTime() - new Date(a.uploadedAt).getTime()

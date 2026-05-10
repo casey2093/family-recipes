@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Author, Recipe } from "@/lib/types";
+import AuthorAvatar from "@/components/AuthorAvatar";
 
 interface DisplayAuthor {
   name: string;
@@ -100,15 +101,8 @@ export default function AuthorsPage() {
                 href={`/author/${encodeURIComponent(author.name)}`}
                 className="group flex flex-col items-center text-center p-5 rounded-2xl border border-gray-100 bg-white hover:shadow-md hover:-translate-y-0.5 transition-all"
               >
-                <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-white shadow-md mb-3">
-                  {author.imageUrl ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img src={author.imageUrl} alt={author.name} className="w-full h-full object-cover" />
-                  ) : (
-                    <div className="w-full h-full bg-recipe-rose flex items-center justify-center text-recipe-pink text-2xl font-bold font-playfair">
-                      {author.name.charAt(0).toUpperCase()}
-                    </div>
-                  )}
+                <div className="border-2 border-white shadow-md rounded-full mb-3">
+                  <AuthorAvatar name={author.name} size="2xl" />
                 </div>
                 <p className="font-bold text-recipe-navy text-sm group-hover:text-recipe-pink transition-colors leading-tight mb-1">
                   {author.name}

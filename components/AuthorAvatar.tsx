@@ -12,17 +12,18 @@ export function invalidateAuthorsCache() {}
 
 interface Props {
   name: string;
-  size?: "xs" | "sm" | "md" | "lg" | "xl";
+  size?: "xs" | "sm" | "md" | "lg" | "xl" | "2xl";
   className?: string;
   hoverOpacity?: boolean;
 }
 
 const sizes: Record<string, { img: string; div: string; text: string }> = {
-  xs: { img: "w-5 h-5", div: "w-5 h-5", text: "text-[10px]" },
-  sm: { img: "w-6 h-6", div: "w-6 h-6", text: "text-xs" },
-  md: { img: "w-7 h-7", div: "w-7 h-7", text: "text-xs" },
-  lg: { img: "w-8 h-8", div: "w-8 h-8", text: "text-sm" },
-  xl: { img: "w-9 h-9", div: "w-9 h-9", text: "text-sm" },
+  xs:  { img: "w-5 h-5",  div: "w-5 h-5",  text: "text-[10px]" },
+  sm:  { img: "w-6 h-6",  div: "w-6 h-6",  text: "text-xs" },
+  md:  { img: "w-7 h-7",  div: "w-7 h-7",  text: "text-xs" },
+  lg:  { img: "w-8 h-8",  div: "w-8 h-8",  text: "text-sm" },
+  xl:  { img: "w-9 h-9",  div: "w-9 h-9",  text: "text-sm" },
+  "2xl": { img: "w-16 h-16", div: "w-16 h-16", text: "text-2xl" },
 };
 
 export default function AuthorAvatar({ name, size = "md", className = "", hoverOpacity = false }: Props) {

@@ -54,6 +54,7 @@ export interface Notification {
   recipeCategory: string;
   fromUser: string;
   commentPreview: string;
+  commentId?: string;
   read: boolean;
   createdAt: string;
 }

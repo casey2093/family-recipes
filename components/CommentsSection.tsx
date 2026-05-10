@@ -20,6 +20,7 @@ function timeAgo(isoString: string): string {
 
 interface Props {
   recipeId: string;
+  highlightId?: string;
 }
 
 interface ImagePreview {
@@ -27,7 +28,7 @@ interface ImagePreview {
   preview: string;
 }
 
-export default function CommentsSection({ recipeId }: Props) {
+export default function CommentsSection({ recipeId, highlightId }: Props) {
   const { user } = useAuth();
   const [comments, setComments] = useState<Comment[]>([]);
   const [newText, setNewText] = useState("");
@@ -44,6 +45,7 @@ export default function CommentsSection({ recipeId }: Props) {
   const [deleteConfirmName, setDeleteConfirmName] = useState("");
   const [deleteError, setDeleteError] = useState("");
   const [lightbox, setLightbox] = useState<{ urls: string[]; index: number } | null>(null);
+  const [highlightedId, setHighlightedId] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const replyFileInputRef = useRef<HTMLInputElement>(null);
 
@@ -59,9 +61,22 @@ export default function CommentsSection({ recipeId }: Props) {
   useEffect(() => {
     fetch(`/api/comments?recipeId=${recipeId}`)
       .then((r) => r.json())
-      .then(setComments)
+      .then((loaded: Comment[]) => {
+        setComments(loaded);
+        if (highlightId) {
+          // Scroll to and briefly highlight the target comment
+          setTimeout(() => {
+            const el = document.getElementById(`comment-${highlightId}`);
+            if (el) {
+              el.scrollIntoView({ behavior: "smooth", block: "center" });
+              setHighlightedId(highlightId);
+              setTimeout(() => setHighlightedId(null), 3000);
+            }
+          }, 300);
+        }
+      })
       .catch(console.error);
-  }, [recipeId]);
+  }, [recipeId, highlightId]);
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>, forReply = false) => {
     const files = Array.from(e.target.files ?? []);
@@ -240,7 +255,11 @@ export default function CommentsSection({ recipeId }: Props) {
           </p>
         )}
         {comments.map((comment) => (
-          <div key={comment.id} className="bg-recipe-cream rounded-2xl p-4">
+          <div
+            key={comment.id}
+            id={`comment-${comment.id}`}
+            className={`rounded-2xl p-4 transition-colors duration-700 ${highlightedId === comment.id ? "bg-blue-100 ring-2 ring-recipe-pink" : "bg-recipe-cream"}`}
+          >
             {/* Delete confirmation inline */}
             {deletingId === comment.id && (
               <div className="mb-3 p-3 bg-red-50 border border-red-200 rounded-xl text-sm">

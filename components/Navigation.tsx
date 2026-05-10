@@ -285,7 +285,7 @@ export default function Navigation() {
                         {[...notifications].reverse().map((n) => (
                           <Link
                             key={n.id}
-                            href={`/${n.recipeCategory}`}
+                            href={`/recipe/${n.recipeId}${n.commentId ? `?comment=${n.commentId}` : ""}`}
                             onClick={() => setNotifOpen(false)}
                             className={`block px-4 py-3 hover:bg-recipe-cream transition-colors ${!n.read ? "bg-blue-50/40" : ""}`}
                           >

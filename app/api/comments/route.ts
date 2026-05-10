@@ -98,6 +98,7 @@ export async function POST(request: Request) {
           recipeCategory: recipe?.category ?? "",
           fromUser: author.trim(),
           commentPreview: text.trim().slice(0, 120),
+          commentId,
         });
       }
 
@@ -141,6 +142,7 @@ export async function POST(request: Request) {
         recipeCategory: recipe.category,
         fromUser: author.trim(),
         commentPreview: text.trim().slice(0, 120),
+        commentId: comment.id,
       });
     }
 
