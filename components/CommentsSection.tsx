@@ -225,7 +225,9 @@ export default function CommentsSection({ recipeId }: Props) {
       <h3 className="font-playfair font-bold text-recipe-navy text-xl mb-4 pt-5 border-t-2 border-recipe-cream">
         Comments{" "}
         {comments.length > 0 && (
-          <span className="text-gray-400 text-base font-normal">({comments.length})</span>
+          <span className="text-gray-400 text-base font-normal">
+            ({comments.reduce((sum, c) => sum + 1 + (c.replies?.length ?? 0), 0)})
+          </span>
         )}
       </h3>
 
