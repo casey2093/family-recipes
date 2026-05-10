@@ -159,7 +159,7 @@ export default function FavoritesPage() {
             <div className="text-5xl mb-4 text-gray-300">★</div>
             <h3 className="font-playfair font-bold text-recipe-navy text-2xl mb-2">No favorites yet</h3>
             <p className="text-gray-500 mb-6">Tap the star on any recipe to save it here.</p>
-            <Link href="/" className="inline-block bg-recipe-pink text-white px-6 py-3 rounded-full font-bold hover:bg-opacity-90 shadow-md">
+            <Link href="/#categories" className="inline-block bg-recipe-pink text-white px-6 py-3 rounded-full font-bold hover:bg-opacity-90 shadow-md">
               Browse Recipes
             </Link>
           </div>

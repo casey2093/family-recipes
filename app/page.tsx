@@ -83,7 +83,7 @@ export default function HomePage() {
       </div>
 
       {/* Categories grid */}
-      <section id="categories" className="max-w-6xl mx-auto px-4 sm:px-6 py-14">
+      <section id="categories" className="max-w-6xl mx-auto px-4 sm:px-6 py-14 scroll-mt-24">
         <div className="text-center mb-10">
           <h2 className="font-playfair font-bold text-recipe-navy text-3xl sm:text-4xl mb-2">
             Browse by Category
