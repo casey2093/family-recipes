@@ -144,23 +144,6 @@ export default function Navigation() {
               Home
             </Link>
 
-            {user && (
-              <Link
-                href={`/author/${encodeURIComponent(user.name)}`}
-                className={navLinkClass(pathname === `/author/${encodeURIComponent(user.name)}`)}
-              >
-                My Recipes
-              </Link>
-            )}
-
-            <Link href="/favorites" className={navLinkClass(pathname === "/favorites")}>
-              My Favorites
-            </Link>
-
-            <Link href="/completed" className={navLinkClass(pathname === "/completed")}>
-              Completed Dishes
-            </Link>
-
             {/* Categories dropdown */}
             <div ref={categoriesRef} className="relative">
               <button
@@ -206,6 +189,23 @@ export default function Navigation() {
                 </div>
               )}
             </div>
+
+            {user && (
+              <Link
+                href={`/author/${encodeURIComponent(user.name)}`}
+                className={navLinkClass(pathname === `/author/${encodeURIComponent(user.name)}`)}
+              >
+                My Recipes
+              </Link>
+            )}
+
+            <Link href="/favorites" className={navLinkClass(pathname === "/favorites")}>
+              My Favorites
+            </Link>
+
+            <Link href="/completed" className={navLinkClass(pathname === "/completed")}>
+              Completed Dishes
+            </Link>
 
             <Link href="/authors" className={navLinkClass(pathname === "/authors")}>
               Authors
