@@ -368,7 +368,7 @@ export default function Navigation() {
                 </>
               ) : (
                 <button
-                  onClick={openAuthModal}
+                  onClick={() => openAuthModal()}
                   className="hidden lg:flex items-center gap-1 text-sm font-semibold text-gray-600 hover:text-recipe-navy px-3 py-1.5 rounded-full hover:bg-recipe-cream transition-all"
                 >
                   Sign In
