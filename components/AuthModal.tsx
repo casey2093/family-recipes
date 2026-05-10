@@ -141,7 +141,7 @@ export default function AuthModal({ onClose, onSuccess, message }: Props) {
                 onChange={(e) => { setName(e.target.value); setError(""); }}
                 placeholder={tab === "login" ? "Enter your name" : "e.g. Grandma Rose"}
                 autoComplete="username"
-                className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-recipe-navy"
+                className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-base sm:text-sm focus:outline-none focus:border-recipe-navy"
               />
             </div>
 
@@ -155,7 +155,7 @@ export default function AuthModal({ onClose, onSuccess, message }: Props) {
                   onChange={(e) => { setPassword(e.target.value); setError(""); }}
                   placeholder={tab === "register" ? "Min. 6 characters" : "Enter your password"}
                   autoComplete={tab === "login" ? "current-password" : "new-password"}
-                  className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-recipe-navy pr-10"
+                  className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-base sm:text-sm focus:outline-none focus:border-recipe-navy pr-10"
                 />
                 <button
                   type="button"
@@ -177,7 +177,7 @@ export default function AuthModal({ onClose, onSuccess, message }: Props) {
                   onChange={(e) => { setConfirmPassword(e.target.value); setError(""); }}
                   placeholder="Re-enter your password"
                   autoComplete="new-password"
-                  className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-recipe-navy"
+                  className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-base sm:text-sm focus:outline-none focus:border-recipe-navy"
                 />
               </div>
             )}
