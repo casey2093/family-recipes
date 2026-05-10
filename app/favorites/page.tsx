@@ -10,8 +10,6 @@ import RecipeViewModal from "@/components/RecipeViewModal";
 import FilterDropdown from "@/components/FilterDropdown";
 
 function FavoriteDashboard({ recipes }: { recipes: Recipe[] }) {
-  if (recipes.length === 0) return null;
-
   const authorCounts: Record<string, number> = {};
   recipes.forEach((r) => { authorCounts[r.uploadedBy] = (authorCounts[r.uploadedBy] ?? 0) + 1; });
   const topAuthor = Object.entries(authorCounts).sort((a, b) => b[1] - a[1])[0];
