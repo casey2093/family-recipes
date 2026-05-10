@@ -46,10 +46,13 @@ export default function HomePage() {
     <>
       {/* ── Mobile hero (normal flow, full image, no cropping) ── */}
       <div className="sm:hidden">
-        {/* Sky-blue text area */}
+        {/* Sky-blue text area — background fades to transparent at bottom so photo blends in */}
         <div
-          className="px-6 pt-14 pb-7 text-center"
-          style={{ background: "linear-gradient(135deg, #ffffff 0%, #f0f9ff 50%, #eff6ff 100%)" }}
+          className="relative z-10 px-6 pt-8 text-center"
+          style={{
+            background: "linear-gradient(to bottom, #ffffff 0%, #f0f9ff 35%, #eff6ff 60%, rgba(239,246,255,0) 100%)",
+            paddingBottom: "4rem",
+          }}
         >
           <h1
             className="font-playfair font-bold text-recipe-navy leading-tight mb-3"
@@ -66,12 +69,12 @@ export default function HomePage() {
           </div>
         </div>
 
-        {/* Full-width photo at natural proportions — no cropping, no blank space */}
+        {/* Photo pulled up to sit behind the fade area of the text panel */}
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src="/family-hero.jpg"
           alt="The Ware Family"
-          className="w-full block"
+          className="w-full block -mt-16"
         />
       </div>
 
