@@ -33,7 +33,7 @@ export default function HomePage() {
         style={{ height: "calc(100vh - 64px)", zIndex: 0 }}
       >
         {/* Photo — starts behind the button row so the tree-line appears right below text */}
-        <div className="absolute inset-x-0 bottom-0" style={{ top: "11%" }}>
+        <div className="absolute inset-x-0 bottom-0" style={{ top: "14%" }}>
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src="/family-hero.jpg"
