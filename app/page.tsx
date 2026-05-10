@@ -39,7 +39,7 @@ export default function HomePage() {
             src="/family-hero.jpg"
             alt="The Ware Family"
             className="w-full h-full object-cover"
-            style={{ objectPosition: "center 20%" }}
+            style={{ objectPosition: "center 8%" }}
           />
 
           {/* Top fade — sky-blue washing over the tree tops, blending with the text panel */}
@@ -65,7 +65,7 @@ export default function HomePage() {
         {/* Sky-blue text panel — layered on top of the photo */}
         {/* Gradient fades out toward the bottom so photo shows through behind buttons */}
         <div
-          className="absolute inset-x-0 top-0 z-10 flex flex-col items-center justify-center px-6 text-center pt-6"
+          className="absolute inset-x-0 top-0 z-10 flex flex-col items-center justify-center px-6 text-center pt-10 sm:pt-6"
           style={{
             height: "34%",
             background:
