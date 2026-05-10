@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useParams, notFound } from "next/navigation";
+import { useParams, useSearchParams, notFound } from "next/navigation";
 import Link from "next/link";
 import { Recipe, Author } from "@/lib/types";
 import { getCategoryById } from "@/lib/categories";
@@ -19,13 +19,14 @@ function formatDate(isoString: string): string {
 
 export default function CategoryPage() {
   const params = useParams();
+  const searchParams = useSearchParams();
   const categoryId = params.category as string;
   const category = getCategoryById(categoryId);
 
   const { openAddModal } = useModal();
   const [recipes, setRecipes] = useState<Recipe[]>([]);
   const [authors, setAuthors] = useState<Author[]>([]);
-  const [activeTab, setActiveTab] = useState<string>("all");
+  const [activeTab, setActiveTab] = useState<string>(searchParams.get("sub") ?? "all");
   const [activeAuthor, setActiveAuthor] = useState<string | null>(null);
   const [sortBy, setSortBy] = useState<"newest" | "oldest" | "az" | "author">("newest");
   const [viewRecipe, setViewRecipe] = useState<Recipe | null>(null);

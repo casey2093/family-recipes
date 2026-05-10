@@ -170,7 +170,7 @@ export default function RecipeCardFull({ recipe, showMeta = true }: Props) {
             </Link>
             <span className="text-gray-400 mx-0.5">›</span>
             <Link
-              href={`/${recipe.category}`}
+              href={`/${recipe.category}?sub=${recipe.subcategory}`}
               className="capitalize hover:text-recipe-pink transition-colors"
             >
               {subcategoryName}
