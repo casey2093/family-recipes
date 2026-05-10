@@ -226,7 +226,7 @@ export default function Navigation() {
               user ? (
                 <>
                 {/* Notification bell */}
-                <div ref={notifRef} className="relative hidden lg:block">
+                <div ref={notifRef} className="relative">
                   <button
                     onClick={handleBellClick}
                     aria-label="Notifications"
