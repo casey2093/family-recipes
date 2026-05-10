@@ -3,11 +3,58 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Recipe } from "@/lib/types";
-import { CATEGORIES } from "@/lib/categories";
+import { CATEGORIES, getCategoryById } from "@/lib/categories";
 import { useModal } from "@/context/ModalContext";
 import RecipeCardPreview from "@/components/RecipeCardPreview";
 import RecipeViewModal from "@/components/RecipeViewModal";
 import FilterDropdown from "@/components/FilterDropdown";
+
+function CompletedDashboard({ recipes }: { recipes: Recipe[] }) {
+  if (recipes.length === 0) return null;
+
+  const authorCounts: Record<string, number> = {};
+  recipes.forEach((r) => { authorCounts[r.uploadedBy] = (authorCounts[r.uploadedBy] ?? 0) + 1; });
+  const topAuthor = Object.entries(authorCounts).sort((a, b) => b[1] - a[1])[0];
+
+  const categoryCounts: Record<string, number> = {};
+  recipes.forEach((r) => { categoryCounts[r.category] = (categoryCounts[r.category] ?? 0) + 1; });
+  const topCategoryEntry = Object.entries(categoryCounts).sort((a, b) => b[1] - a[1])[0];
+  const topCategoryInfo = getCategoryById(topCategoryEntry?.[0]);
+
+  return (
+    <div className="bg-recipe-navy text-white">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 py-4 flex flex-wrap items-center justify-center gap-6 sm:gap-10 text-sm">
+        <div className="flex items-center gap-2">
+          <span className="font-bold text-emerald-300 text-xl">{recipes.length}</span>
+          <span className="text-white/80">{recipes.length === 1 ? "Dish made" : "Dishes made"}</span>
+        </div>
+        <div className="w-px h-4 bg-white/20 hidden sm:block" />
+        <div className="flex items-center gap-2">
+          <span className="font-bold text-emerald-300 text-xl">{Object.keys(categoryCounts).length}</span>
+          <span className="text-white/80">{Object.keys(categoryCounts).length === 1 ? "Category" : "Categories"}</span>
+        </div>
+        {topAuthor && (
+          <>
+            <div className="w-px h-4 bg-white/20 hidden sm:block" />
+            <div className="flex items-center gap-2">
+              <span className="text-white/80">Go-to chef:</span>
+              <span className="font-bold text-blue-200">{topAuthor[0]}</span>
+            </div>
+          </>
+        )}
+        {topCategoryInfo && (
+          <>
+            <div className="w-px h-4 bg-white/20 hidden sm:block" />
+            <div className="flex items-center gap-2">
+              <span className="text-white/80">Favorite cuisine:</span>
+              <span className="font-bold text-blue-200">{topCategoryInfo.emoji} {topCategoryInfo.name}</span>
+            </div>
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
 
 export default function CompletedPage() {
   const { openAddModal } = useModal();
@@ -60,23 +107,7 @@ export default function CompletedPage() {
         </div>
       </div>
 
-      {completedRecipes.length > 0 && (
-        <div className="bg-recipe-navy text-white">
-          <div className="max-w-6xl mx-auto px-4 sm:px-6 py-4 flex flex-wrap items-center justify-center gap-6 sm:gap-10 text-sm">
-            <div className="flex items-center gap-2">
-              <span className="font-bold text-emerald-300 text-xl">{completedRecipes.length}</span>
-              <span className="text-white/80">{completedRecipes.length === 1 ? "Dish made" : "Dishes made"}</span>
-            </div>
-            <div className="w-px h-4 bg-white/20 hidden sm:block" />
-            <div className="flex items-center gap-2">
-              <span className="font-bold text-emerald-300 text-xl">
-                {new Set(completedRecipes.map((r) => r.category)).size}
-              </span>
-              <span className="text-white/80">Categories</span>
-            </div>
-          </div>
-        </div>
-      )}
+      <CompletedDashboard recipes={completedRecipes} />
 
       <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6">
         {completedRecipes.length > 0 && (
@@ -126,7 +157,7 @@ export default function CompletedPage() {
               Open any recipe and tap the checkmark to mark it as made.
             </p>
             <Link
-              href="/"
+              href="/#categories"
               className="inline-block bg-recipe-pink text-white px-6 py-3 rounded-full font-bold hover:bg-opacity-90 shadow-md"
             >
               Browse Recipes
