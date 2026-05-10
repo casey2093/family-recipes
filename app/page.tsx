@@ -66,24 +66,28 @@ export default function HomePage() {
           <div className="flex flex-col gap-3 items-center">
             {categoryButtons}
           </div>
-        </div>
 
-        {/* Photo with gradient overlay fading from sky-blue into the image */}
-        <div className="relative" style={{ marginTop: "-2rem" }}>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src="/family-hero.jpg"
-            alt="The Ware Family"
-            className="w-full block"
-          />
+          {/* Gradient that bleeds from mid-Browse-Recipes-button down into the photo below.
+              bottom: -120px pushes the element's bottom edge 120px past the text section.
+              height: 162px means the top edge starts 42px above the text section bottom
+              = roughly the middle of the Browse Recipes button. */}
           <div
-            className="absolute inset-x-0 top-0 pointer-events-none"
+            className="absolute inset-x-0 pointer-events-none"
             style={{
-              height: "180px",
-              background: "linear-gradient(to bottom, #eff6ff 0%, #eff6ff 25%, rgba(239,246,255,0.75) 55%, rgba(239,246,255,0.2) 80%, transparent 100%)",
+              bottom: "-120px",
+              height: "162px",
+              background: "linear-gradient(to bottom, #eff6ff 0%, rgba(239,246,255,0.9) 30%, rgba(239,246,255,0.5) 60%, transparent 100%)",
             }}
           />
         </div>
+
+        {/* Photo — natural position, no negative margin */}
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src="/family-hero.jpg"
+          alt="The Ware Family"
+          className="w-full block"
+        />
       </div>
 
       {/* ── Desktop hero (sticky, scroll-over effect) ── */}
