@@ -35,11 +35,17 @@ export default function RecipeCardPreview({ recipe, onClick }: Props) {
   const toggleFavorite = (e: React.MouseEvent) => {
     e.stopPropagation();
     const ids: string[] = JSON.parse(localStorage.getItem("wfk_favorites") ?? "[]");
-    const newIds = isFavorite
-      ? ids.filter((id) => id !== recipe.id)
-      : [...ids, recipe.id];
+    const newIds = isFavorite ? ids.filter((id) => id !== recipe.id) : [...ids, recipe.id];
     localStorage.setItem("wfk_favorites", JSON.stringify(newIds));
     setIsFavorite(!isFavorite);
+  };
+
+  const toggleCompleted = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    const ids: string[] = JSON.parse(localStorage.getItem("wfk_completed") ?? "[]");
+    const newIds = isCompleted ? ids.filter((id) => id !== recipe.id) : [...ids, recipe.id];
+    localStorage.setItem("wfk_completed", JSON.stringify(newIds));
+    setIsCompleted(!isCompleted);
   };
 
   return (
@@ -128,15 +134,15 @@ export default function RecipeCardPreview({ recipe, onClick }: Props) {
 
       {/* Completed + Star buttons */}
       <div className="absolute top-3 right-3 flex items-center gap-1.5 z-10">
-        {isCompleted && (
-          <div
-            className="w-8 h-8 flex items-center justify-center rounded-full bg-white/90 shadow-sm text-sm font-bold"
-            style={{ color: "#10B981" }}
-            title="You've made this!"
-          >
-            ✓
-          </div>
-        )}
+        <button
+          onClick={toggleCompleted}
+          aria-label={isCompleted ? "Remove from completed" : "Mark as made"}
+          title={isCompleted ? "Remove from Completed Dishes" : "Mark as made"}
+          className="w-8 h-8 flex items-center justify-center rounded-full bg-white/90 shadow-sm text-sm font-bold transition-all hover:scale-110"
+          style={{ color: isCompleted ? "#1B3A5C" : "#d1d5db" }}
+        >
+          ✓
+        </button>
         <button
           onClick={toggleFavorite}
           aria-label={isFavorite ? "Remove from favorites" : "Add to favorites"}
