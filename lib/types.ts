@@ -46,6 +46,18 @@ export const emptyFormData: RecipeFormData = {
   uploadedBy: "",
 };
 
+export interface Notification {
+  id: string;
+  type: "comment" | "reply";
+  recipeId: string;
+  recipeTitle: string;
+  recipeCategory: string;
+  fromUser: string;
+  commentPreview: string;
+  read: boolean;
+  createdAt: string;
+}
+
 export interface Author {
   id: string;
   name: string;

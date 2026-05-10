@@ -1,24 +1,74 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { CATEGORIES } from "@/lib/categories";
 import { useModal } from "@/context/ModalContext";
 import { useAuth } from "@/context/AuthContext";
 import { useAuthors } from "@/context/AuthorsContext";
+import { Notification } from "@/lib/types";
+
+function timeAgo(iso: string): string {
+  const diff = Date.now() - new Date(iso).getTime();
+  const mins = Math.floor(diff / 60000);
+  if (mins < 1) return "just now";
+  if (mins < 60) return `${mins}m ago`;
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24) return `${hrs}h ago`;
+  const days = Math.floor(hrs / 24);
+  return `${days}d ago`;
+}
 
 export default function Navigation() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [categoriesOpen, setCategoriesOpen] = useState(false);
   const [mobileCategoriesOpen, setMobileCategoriesOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
+  const [notifOpen, setNotifOpen] = useState(false);
+  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [newRecipesCount, setNewRecipesCount] = useState(0);
+  const [unreadCount, setUnreadCount] = useState(0);
   const pathname = usePathname();
   const { openAddModal } = useModal();
   const { user, loading: authLoading, openAuthModal, logout } = useAuth();
   const authorsMap = useAuthors();
   const categoriesRef = useRef<HTMLDivElement>(null);
   const profileRef = useRef<HTMLDivElement>(null);
+  const notifRef = useRef<HTMLDivElement>(null);
+
+  const fetchNotifications = useCallback(async () => {
+    if (!user) return;
+    try {
+      const res = await fetch("/api/notifications");
+      if (!res.ok) return;
+      const data = await res.json();
+      setNotifications(data.notifications ?? []);
+      setNewRecipesCount(data.newRecipesCount ?? 0);
+      setUnreadCount(data.unreadCount ?? 0);
+    } catch { /* silent */ }
+  }, [user]);
+
+  useEffect(() => { fetchNotifications(); }, [fetchNotifications]);
+
+  const handleBellClick = async () => {
+    const opening = !notifOpen;
+    setNotifOpen(opening);
+    setProfileOpen(false);
+    if (opening && unreadCount > 0) {
+      // Mark all as read
+      try {
+        await fetch("/api/notifications", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ action: "mark_read" }),
+        });
+        setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
+        setNewRecipesCount(0);
+        setUnreadCount(0);
+      } catch { /* silent */ }
+    }
+  };
 
   // Close dropdowns on outside click
   useEffect(() => {
@@ -29,6 +79,9 @@ export default function Navigation() {
       if (profileRef.current && !profileRef.current.contains(e.target as Node)) {
         setProfileOpen(false);
       }
+      if (notifRef.current && !notifRef.current.contains(e.target as Node)) {
+        setNotifOpen(false);
+      }
     };
     document.addEventListener("mousedown", handler);
     return () => document.removeEventListener("mousedown", handler);
@@ -38,6 +91,7 @@ export default function Navigation() {
   useEffect(() => {
     setCategoriesOpen(false);
     setProfileOpen(false);
+    setNotifOpen(false);
     setMobileOpen(false);
   }, [pathname]);
 
@@ -158,7 +212,7 @@ export default function Navigation() {
             </Link>
           </nav>
 
-          {/* Right side: Add Recipe + Auth + hamburger */}
+          {/* Right side: Add Recipe + Bell + Auth + hamburger */}
           <div className="flex items-center gap-4 flex-shrink-0">
             <button
               onClick={() => openAddModal()}
@@ -170,6 +224,92 @@ export default function Navigation() {
             {/* Auth area */}
             {!authLoading && (
               user ? (
+                <>
+                {/* Notification bell */}
+                <div ref={notifRef} className="relative hidden lg:block">
+                  <button
+                    onClick={handleBellClick}
+                    aria-label="Notifications"
+                    className="relative w-9 h-9 flex items-center justify-center rounded-full hover:bg-recipe-cream transition-all"
+                  >
+                    {unreadCount > 0 ? (
+                      /* Filled navy bell when there are unread */
+                      <svg className="w-5 h-5 text-recipe-navy" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6V11c0-3.07-1.63-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.64 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/>
+                      </svg>
+                    ) : (
+                      /* Outline bell when no unread */
+                      <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.75} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                      </svg>
+                    )}
+                    {/* Pink badge */}
+                    {unreadCount > 0 && (
+                      <span className="absolute top-0.5 right-0.5 min-w-[16px] h-4 bg-recipe-pink rounded-full text-white text-[9px] font-bold flex items-center justify-center px-0.5">
+                        {unreadCount > 9 ? "9+" : unreadCount}
+                      </span>
+                    )}
+                  </button>
+
+                  {/* Notification dropdown */}
+                  {notifOpen && (
+                    <div className="absolute right-0 top-full mt-2 w-80 bg-white rounded-2xl shadow-xl border border-gray-100 z-50 overflow-hidden">
+                      <div className="px-4 py-3 border-b border-gray-100 flex items-center justify-between">
+                        <span className="font-bold text-recipe-navy text-sm">Notifications</span>
+                        {notifications.length + newRecipesCount === 0 && (
+                          <span className="text-xs text-gray-400">All caught up!</span>
+                        )}
+                      </div>
+                      <div className="max-h-80 overflow-y-auto divide-y divide-gray-50">
+                        {newRecipesCount > 0 && (
+                          <div className="px-4 py-3 bg-sky-50/60">
+                            <p className="text-sm font-semibold text-recipe-navy">
+                              🍳 {newRecipesCount} new {newRecipesCount === 1 ? "recipe" : "recipes"} added since your last visit
+                            </p>
+                            <Link
+                              href="/#categories"
+                              className="text-xs text-recipe-pink hover:underline"
+                              onClick={() => setNotifOpen(false)}
+                            >
+                              Browse them →
+                            </Link>
+                          </div>
+                        )}
+                        {notifications.length === 0 && newRecipesCount === 0 && (
+                          <div className="px-4 py-8 text-center text-gray-400 text-sm">
+                            <div className="text-3xl mb-2">🔔</div>
+                            No notifications yet
+                          </div>
+                        )}
+                        {[...notifications].reverse().map((n) => (
+                          <Link
+                            key={n.id}
+                            href={`/${n.recipeCategory}`}
+                            onClick={() => setNotifOpen(false)}
+                            className={`block px-4 py-3 hover:bg-recipe-cream transition-colors ${!n.read ? "bg-blue-50/40" : ""}`}
+                          >
+                            <p className="text-xs font-semibold text-recipe-navy leading-snug">
+                              {n.type === "comment"
+                                ? <><span className="text-recipe-pink">{n.fromUser}</span> commented on your recipe</>
+                                : <><span className="text-recipe-pink">{n.fromUser}</span> replied to your comment</>
+                              }
+                            </p>
+                            <p className="text-xs text-gray-500 mt-0.5 truncate font-medium">
+                              &ldquo;{n.recipeTitle}&rdquo;
+                            </p>
+                            {n.commentPreview && (
+                              <p className="text-xs text-gray-400 mt-0.5 line-clamp-1 italic">
+                                &ldquo;{n.commentPreview}&rdquo;
+                              </p>
+                            )}
+                            <p className="text-[10px] text-gray-300 mt-1">{timeAgo(n.createdAt)}</p>
+                          </Link>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+
                 <div ref={profileRef} className="relative hidden lg:block">
                   {/* Profile button */}
                   <button
@@ -225,6 +365,7 @@ export default function Navigation() {
                     </div>
                   )}
                 </div>
+                </>
               ) : (
                 <button
                   onClick={openAuthModal}

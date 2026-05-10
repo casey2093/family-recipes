@@ -627,27 +627,6 @@ export default function AddRecipeModal({ defaultCategory, editRecipe, onClose }:
               </div>
 
               <div>
-                <label className="block text-sm font-bold text-recipe-navy mb-1.5">
-                  Photo of the dish <span className="font-normal text-gray-400">(optional)</span>
-                </label>
-                <div
-                  className="border-2 border-dashed border-gray-200 rounded-xl p-4 text-center cursor-pointer hover:border-recipe-pink hover:bg-recipe-rose/10 transition-all"
-                  onClick={() => dishImageInputRef.current?.click()}
-                >
-                  {dishImagePreview ? (
-                    <div className="space-y-2">
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img src={dishImagePreview} alt="Dish preview" className="max-h-40 mx-auto rounded-lg object-contain" />
-                      <p className="text-xs text-gray-500">Click to change</p>
-                    </div>
-                  ) : (
-                    <p className="text-sm text-gray-400">Click to upload a photo of the finished dish</p>
-                  )}
-                </div>
-                <input ref={dishImageInputRef} type="file" accept="image/*" className="hidden" onChange={handleDishImageChange} />
-              </div>
-
-              <div>
                 <label className="block text-sm font-bold text-recipe-navy mb-1.5">Your Name *</label>
                 {user ? (
                   <div className="flex items-center gap-2 px-4 py-3 border border-gray-200 rounded-xl bg-gray-50 text-sm">
