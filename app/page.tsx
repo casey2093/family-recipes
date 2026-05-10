@@ -67,27 +67,27 @@ export default function HomePage() {
             {categoryButtons}
           </div>
 
-          {/* Gradient that bleeds from mid-Browse-Recipes-button down into the photo below.
-              bottom: -120px pushes the element's bottom edge 120px past the text section.
-              height: 162px means the top edge starts 42px above the text section bottom
-              = roughly the middle of the Browse Recipes button. */}
+        </div>
+
+        {/* Photo */}
+        <div className="relative" style={{ marginTop: "-2rem" }}>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/family-hero.jpg"
+            alt="The Ware Family"
+            className="w-full block"
+          />
+          {/* Gradient starts above the photo top (top: -2rem) so it begins at the
+              Browse Recipes button level, fading to transparent ~100px into the photo */}
           <div
             className="absolute inset-x-0 pointer-events-none"
             style={{
-              bottom: "-120px",
-              height: "162px",
-              background: "linear-gradient(to bottom, #eff6ff 0%, rgba(239,246,255,0.9) 30%, rgba(239,246,255,0.5) 60%, transparent 100%)",
+              top: "-2rem",
+              height: "150px",
+              background: "linear-gradient(to bottom, #eff6ff 0%, rgba(239,246,255,0.9) 35%, rgba(239,246,255,0.5) 65%, transparent 100%)",
             }}
           />
         </div>
-
-        {/* Photo — natural position, no negative margin */}
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src="/family-hero.jpg"
-          alt="The Ware Family"
-          className="w-full block"
-        />
       </div>
 
       {/* ── Desktop hero (sticky, scroll-over effect) ── */}
