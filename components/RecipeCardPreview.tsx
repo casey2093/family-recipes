@@ -4,8 +4,8 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Recipe } from "@/lib/types";
 import { getCategoryById, getSubcategoryName } from "@/lib/categories";
-import { useAuthors } from "@/context/AuthorsContext";
 import { useAuth } from "@/context/AuthContext";
+import AuthorAvatar from "@/components/AuthorAvatar";
 
 interface Props {
   recipe: Recipe;
@@ -22,8 +22,6 @@ function formatDate(isoString: string): string {
 
 export default function RecipeCardPreview({ recipe, onClick }: Props) {
   const category = getCategoryById(recipe.category);
-  const authorsMap = useAuthors();
-  const authorData = authorsMap[recipe.uploadedBy.toLowerCase()];
   const { user, openAuthModal } = useAuth();
   const subcategoryName = getSubcategoryName(recipe.category, recipe.subcategory);
   const totalTime = recipe.prepTime + recipe.cookTime;
@@ -157,18 +155,7 @@ export default function RecipeCardPreview({ recipe, onClick }: Props) {
               onClick={(e) => e.stopPropagation()}
               className="flex items-center gap-2 hover:opacity-80"
             >
-              {authorData?.imageUrl ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  src={authorData.imageUrl}
-                  alt={recipe.uploadedBy}
-                  className="w-6 h-6 rounded-full object-cover flex-shrink-0"
-                />
-              ) : (
-                <div className="w-6 h-6 rounded-full bg-recipe-rose flex items-center justify-center text-recipe-pink text-xs font-bold flex-shrink-0">
-                  {recipe.uploadedBy.charAt(0).toUpperCase()}
-                </div>
-              )}
+              <AuthorAvatar name={recipe.uploadedBy} size="sm" />
               <span className="text-xs font-semibold text-gray-600">{recipe.uploadedBy}</span>
             </Link>
             <span className="text-xs text-gray-400">{formatDate(recipe.uploadedAt)}</span>

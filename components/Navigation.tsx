@@ -6,7 +6,7 @@ import { usePathname } from "next/navigation";
 import { CATEGORIES } from "@/lib/categories";
 import { useModal } from "@/context/ModalContext";
 import { useAuth } from "@/context/AuthContext";
-import { useAuthors } from "@/context/AuthorsContext";
+import AuthorAvatar from "@/components/AuthorAvatar";
 import { Notification } from "@/lib/types";
 
 function timeAgo(iso: string): string {
@@ -32,7 +32,6 @@ export default function Navigation() {
   const pathname = usePathname();
   const { openAddModal } = useModal();
   const { user, loading: authLoading, openAuthModal, logout } = useAuth();
-  const authorsMap = useAuthors();
   const categoriesRef = useRef<HTMLDivElement>(null);
   const profileRef = useRef<HTMLDivElement>(null);
   const notifRef = useRef<HTMLDivElement>(null);
@@ -318,18 +317,7 @@ export default function Navigation() {
                     onClick={() => setProfileOpen((o) => !o)}
                     className="flex items-center gap-2 rounded-full hover:bg-recipe-cream px-2 py-1 transition-all"
                   >
-                    {authorsMap[user.name.toLowerCase()]?.imageUrl ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img
-                        src={authorsMap[user.name.toLowerCase()].imageUrl}
-                        alt={user.name}
-                        className="w-8 h-8 rounded-full object-cover flex-shrink-0"
-                      />
-                    ) : (
-                      <div className="w-8 h-8 rounded-full bg-recipe-rose flex items-center justify-center text-recipe-pink text-sm font-bold flex-shrink-0">
-                        {user.name.charAt(0).toUpperCase()}
-                      </div>
-                    )}
+                    <AuthorAvatar name={user.name} size="lg" />
                     <span className="text-sm font-semibold text-recipe-navy max-w-[100px] truncate">
                       {user.name}
                     </span>
@@ -412,18 +400,7 @@ export default function Navigation() {
             {user && (
               <div className="flex items-center gap-3 px-5 py-3 bg-recipe-cream border-b border-gray-100">
                 <Link href={`/author/${encodeURIComponent(user.name)}`} onClick={() => setMobileOpen(false)}>
-                  {authorsMap[user.name.toLowerCase()]?.imageUrl ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                      src={authorsMap[user.name.toLowerCase()].imageUrl}
-                      alt={user.name}
-                      className="w-9 h-9 rounded-full object-cover flex-shrink-0"
-                    />
-                  ) : (
-                    <div className="w-9 h-9 rounded-full bg-recipe-rose flex items-center justify-center text-recipe-pink font-bold flex-shrink-0">
-                      {user.name.charAt(0).toUpperCase()}
-                    </div>
-                  )}
+                  <AuthorAvatar name={user.name} size="xl" />
                 </Link>
                 <div className="flex-1 min-w-0">
                   <Link

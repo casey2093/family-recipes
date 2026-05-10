@@ -8,6 +8,7 @@ import { CATEGORIES } from "@/lib/categories";
 import { useModal } from "@/context/ModalContext";
 import { useAuth } from "@/context/AuthContext";
 import { useRefreshAuthors } from "@/context/AuthorsContext";
+import { invalidateAuthorsCache } from "@/components/AuthorAvatar";
 import { uploadImage } from "@/lib/clientUpload";
 import RecipeCardPreview from "@/components/RecipeCardPreview";
 import RecipeViewModal from "@/components/RecipeViewModal";
@@ -103,6 +104,7 @@ export default function AuthorPage() {
         imageUrl: editImageUrl || undefined,
       }));
       refreshAuthors();
+      invalidateAuthorsCache();
       setIsEditing(false);
     } finally {
       setSaving(false);
