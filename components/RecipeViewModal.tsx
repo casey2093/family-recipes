@@ -176,7 +176,7 @@ export default function RecipeViewModal({ recipe, onClose, onDelete }: Props) {
               value={deleteConfirmName}
               onChange={(e) => { setDeleteConfirmName(e.target.value); setDeleteError(""); }}
               placeholder={recipe.uploadedBy}
-              className="w-full border border-red-300 rounded-xl px-3 py-2 text-sm mb-2 focus:outline-none focus:border-red-500 bg-white"
+              className="w-full border border-red-300 rounded-xl px-3 py-2 text-base sm:text-sm mb-2 focus:outline-none focus:border-red-500 bg-white"
             />
             {deleteError && <p className="text-red-600 text-xs mb-2">{deleteError}</p>}
             <div className="flex gap-2">

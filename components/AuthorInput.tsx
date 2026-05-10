@@ -27,7 +27,7 @@ export default function AuthorInput({ value, onChange, authors, error, className
         onFocus={() => setShowSuggestions(true)}
         onBlur={() => setTimeout(() => setShowSuggestions(false), 150)}
         placeholder="e.g. Aunt Carol"
-        className={`w-full border rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-recipe-navy transition-colors ${
+        className={`w-full border rounded-xl px-4 py-3 text-base sm:text-sm focus:outline-none focus:border-recipe-navy transition-colors ${
           error ? "border-red-400 bg-red-50" : "border-gray-200 hover:border-gray-300"
         } ${className ?? ""}`}
       />

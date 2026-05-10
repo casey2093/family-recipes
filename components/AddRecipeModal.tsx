@@ -507,7 +507,7 @@ export default function AddRecipeModal({ defaultCategory, editRecipe, onClose }:
                   value={form.title}
                   onChange={(e) => setField("title", e.target.value)}
                   placeholder="e.g. Grandma's Famous Apple Pie"
-                  className={`w-full border rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-recipe-navy transition-colors ${errors.title ? "border-red-400 bg-red-50" : "border-gray-200 hover:border-gray-300"}`}
+                  className={`w-full border rounded-xl px-4 py-3 text-base sm:text-sm focus:outline-none focus:border-recipe-navy transition-colors ${errors.title ? "border-red-400 bg-red-50" : "border-gray-200 hover:border-gray-300"}`}
                 />
                 {errors.title && <p className="mt-1 text-xs text-red-500">{errors.title}</p>}
               </div>
@@ -522,7 +522,7 @@ export default function AddRecipeModal({ defaultCategory, editRecipe, onClose }:
                       setField("category", e.target.value);
                       setField("subcategory", cat?.subcategories[0]?.id ?? "");
                     }}
-                    className={`w-full border rounded-xl px-3 py-3 text-sm focus:outline-none focus:border-recipe-navy cursor-pointer ${errors.category ? "border-red-400 bg-red-50" : "border-gray-200"}`}
+                    className={`w-full border rounded-xl px-3 py-3 text-base sm:text-sm focus:outline-none focus:border-recipe-navy cursor-pointer ${errors.category ? "border-red-400 bg-red-50" : "border-gray-200"}`}
                   >
                     <option value="">Select…</option>
                     {CATEGORIES.map((c) => (
@@ -537,7 +537,7 @@ export default function AddRecipeModal({ defaultCategory, editRecipe, onClose }:
                     value={form.subcategory}
                     onChange={(e) => setField("subcategory", e.target.value)}
                     disabled={!form.category}
-                    className={`w-full border rounded-xl px-3 py-3 text-sm focus:outline-none focus:border-recipe-navy disabled:opacity-50 cursor-pointer ${errors.subcategory ? "border-red-400 bg-red-50" : "border-gray-200"}`}
+                    className={`w-full border rounded-xl px-3 py-3 text-base sm:text-sm focus:outline-none focus:border-recipe-navy disabled:opacity-50 cursor-pointer ${errors.subcategory ? "border-red-400 bg-red-50" : "border-gray-200"}`}
                   >
                     <option value="">Select…</option>
                     {selectedCategory?.subcategories.map((s) => (
@@ -560,7 +560,7 @@ export default function AddRecipeModal({ defaultCategory, editRecipe, onClose }:
                       value={form[field]}
                       onChange={(e) => setField(field, e.target.value)}
                       placeholder="0"
-                      className={`w-full border rounded-xl px-3 py-3 text-sm focus:outline-none focus:border-recipe-navy ${errors[field] ? "border-red-400 bg-red-50" : "border-gray-200"}`}
+                      className={`w-full border rounded-xl px-3 py-3 text-base sm:text-sm focus:outline-none focus:border-recipe-navy ${errors[field] ? "border-red-400 bg-red-50" : "border-gray-200"}`}
                     />
                     {errors[field] && <p className="mt-1 text-xs text-red-500">{errors[field]}</p>}
                   </div>
@@ -579,7 +579,7 @@ export default function AddRecipeModal({ defaultCategory, editRecipe, onClose }:
                         value={ing}
                         onChange={(e) => updateListItem("ingredients", i, e.target.value)}
                         placeholder={`Ingredient ${i + 1}`}
-                        className="flex-1 border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-recipe-navy"
+                        className="flex-1 border border-gray-200 rounded-xl px-3 py-2 text-base sm:text-sm focus:outline-none focus:border-recipe-navy"
                       />
                       {form.ingredients.length > 1 && (
                         <button onClick={() => removeListItem("ingredients", i)} className="px-2 text-gray-400 hover:text-red-400 rounded-lg self-start mt-2">✕</button>
@@ -602,7 +602,7 @@ export default function AddRecipeModal({ defaultCategory, editRecipe, onClose }:
                         onChange={(e) => updateListItem("instructions", i, e.target.value)}
                         placeholder={`Step ${i + 1}…`}
                         rows={2}
-                        className="flex-1 border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-recipe-navy resize-none"
+                        className="flex-1 border border-gray-200 rounded-xl px-3 py-2 text-base sm:text-sm focus:outline-none focus:border-recipe-navy resize-none"
                       />
                       {form.instructions.length > 1 && (
                         <button onClick={() => removeListItem("instructions", i)} className="px-2 text-gray-400 hover:text-red-400 rounded-lg self-start mt-2">✕</button>
@@ -622,7 +622,7 @@ export default function AddRecipeModal({ defaultCategory, editRecipe, onClose }:
                   value={form.source}
                   onChange={(e) => setField("source", e.target.value)}
                   placeholder="e.g. Grandma's recipe card, or paste a URL"
-                  className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-recipe-navy"
+                  className="w-full border border-gray-200 rounded-xl px-4 py-3 text-base sm:text-sm focus:outline-none focus:border-recipe-navy"
                 />
               </div>
 

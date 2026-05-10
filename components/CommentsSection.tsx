@@ -253,7 +253,7 @@ export default function CommentsSection({ recipeId }: Props) {
                   value={deleteConfirmName}
                   onChange={(e) => { setDeleteConfirmName(e.target.value); setDeleteError(""); }}
                   placeholder="Your name"
-                  className="w-full border border-red-300 rounded-lg px-3 py-1.5 text-sm mb-2 focus:outline-none focus:border-red-500 bg-white"
+                  className="w-full border border-red-300 rounded-lg px-3 py-1.5 text-base sm:text-sm mb-2 focus:outline-none focus:border-red-500 bg-white"
                 />
                 {deleteError && <p className="text-red-600 text-xs mb-2">{deleteError}</p>}
                 <div className="flex gap-2">
@@ -352,7 +352,7 @@ export default function CommentsSection({ recipeId }: Props) {
                     value={replyAuthor}
                     onChange={(e) => setReplyAuthor(e.target.value)}
                     placeholder="Your name"
-                    className="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-recipe-navy bg-white"
+                    className="w-full border border-gray-300 rounded-xl px-3 py-2 text-base sm:text-sm focus:outline-none focus:border-recipe-navy bg-white"
                   />
                 )}
                 <textarea
@@ -360,7 +360,7 @@ export default function CommentsSection({ recipeId }: Props) {
                   onChange={(e) => setReplyText(e.target.value)}
                   placeholder="Write a reply…"
                   rows={2}
-                  className="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-recipe-navy bg-white resize-none"
+                  className="w-full border border-gray-300 rounded-xl px-3 py-2 text-base sm:text-sm focus:outline-none focus:border-recipe-navy bg-white resize-none"
                 />
                 {replyImages.length > 0 && (
                   <div className="flex flex-wrap gap-2">
@@ -458,7 +458,7 @@ export default function CommentsSection({ recipeId }: Props) {
             value={newAuthor}
             onChange={(e) => setNewAuthor(e.target.value)}
             placeholder="Your name"
-            className="w-full border border-gray-300 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-recipe-navy bg-white"
+            className="w-full border border-gray-300 rounded-xl px-3 py-2.5 text-base sm:text-sm focus:outline-none focus:border-recipe-navy bg-white"
           />
         )}
         <textarea
@@ -466,7 +466,7 @@ export default function CommentsSection({ recipeId }: Props) {
           onChange={(e) => setNewText(e.target.value)}
           placeholder="Share your thoughts, memories, or tips…"
           rows={3}
-          className="w-full border border-gray-300 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-recipe-navy bg-white resize-none"
+          className="w-full border border-gray-300 rounded-xl px-3 py-2.5 text-base sm:text-sm focus:outline-none focus:border-recipe-navy bg-white resize-none"
         />
 
         {newImages.length > 0 && (

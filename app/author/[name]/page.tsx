@@ -248,7 +248,7 @@ export default function AuthorPage() {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search recipes…"
-              className="flex-1 min-w-[180px] border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-recipe-navy"
+              className="flex-1 min-w-[180px] border border-gray-200 rounded-xl px-4 py-2.5 text-base sm:text-sm focus:outline-none focus:border-recipe-navy"
             />
             <FilterDropdown
               value={selectedCategory}

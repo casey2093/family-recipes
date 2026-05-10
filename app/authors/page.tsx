@@ -88,7 +88,7 @@ export default function AuthorsPage() {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search authors…"
-            className="w-full max-w-sm border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-recipe-navy"
+            className="w-full max-w-sm border border-gray-200 rounded-xl px-4 py-2.5 text-base sm:text-sm focus:outline-none focus:border-recipe-navy"
           />
         </div>
 
