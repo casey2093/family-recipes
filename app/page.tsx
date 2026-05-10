@@ -33,13 +33,13 @@ export default function HomePage() {
         style={{ height: "calc(100vh - 64px)", zIndex: 0 }}
       >
         {/* Photo — starts behind the button row so the tree-line appears right below text */}
-        <div className="absolute inset-x-0 bottom-0" style={{ top: "18%" }}>
+        <div className="absolute inset-x-0 bottom-0" style={{ top: "10%" }}>
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src="/family-hero.jpg"
             alt="The Ware Family"
             className="w-full h-full object-cover"
-            style={{ objectPosition: "center 12%" }}
+            style={{ objectPosition: "center 20%" }}
           />
 
           {/* Top fade — sky-blue washing over the tree tops, blending with the text panel */}
@@ -100,7 +100,7 @@ export default function HomePage() {
       </section>
 
       {/* Scrollable content — slides up over the sticky hero */}
-      <div id="categories" className="relative scroll-mt-16" style={{ zIndex: 10 }}>
+      <div id="categories" className="relative scroll-mt-16 bg-recipe-cream" style={{ zIndex: 10 }}>
 
         {/* Stats banner */}
         <div className="bg-recipe-navy text-white">
@@ -125,7 +125,7 @@ export default function HomePage() {
         </div>
 
         {/* Categories grid */}
-        <section className="bg-recipe-cream max-w-6xl mx-auto px-4 sm:px-6 py-14" style={{ maxWidth: "100%" }}>
+        <section className="max-w-6xl mx-auto px-4 sm:px-6 py-14" style={{ maxWidth: "100%" }}>
           <div className="max-w-6xl mx-auto">
             <div className="text-center mb-10">
               <h2 className="font-playfair font-bold text-recipe-navy text-3xl sm:text-4xl mb-2">
