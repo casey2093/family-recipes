@@ -37,7 +37,7 @@ export function invalidateAuthorsCache() {
 
 interface Props {
   name: string;
-  size?: "xs" | "sm" | "md" | "lg";
+  size?: "xs" | "sm" | "md" | "lg" | "xl";
   className?: string;
   hoverOpacity?: boolean;
 }
