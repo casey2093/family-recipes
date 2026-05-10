@@ -112,7 +112,7 @@ export default function HomePage() {
 
         {/* Sky-blue text panel */}
         <div
-          className="absolute inset-x-0 top-0 z-10 flex flex-col items-center justify-start px-6 text-center pt-8"
+          className="absolute inset-x-0 top-0 z-10 flex flex-col items-center justify-start px-6 text-center pt-3"
           style={{
             height: "42%",
             background:
