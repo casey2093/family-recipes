@@ -121,7 +121,7 @@ export default function FavoritesPage() {
             <select
               value={selectedCategory}
               onChange={(e) => setSelectedCategory(e.target.value)}
-              className="border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-recipe-navy bg-white"
+              className="border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-recipe-navy bg-white cursor-pointer"
             >
               <option value="">All categories</option>
               {CATEGORIES.map((c) => (
@@ -132,7 +132,7 @@ export default function FavoritesPage() {
               <select
                 value={selectedSubcategory}
                 onChange={(e) => setSelectedSubcategory(e.target.value)}
-                className="border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-recipe-navy bg-white"
+                className="border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-recipe-navy bg-white cursor-pointer"
               >
                 <option value="">All subcategories</option>
                 {selectedCategoryData.subcategories.map((s) => (

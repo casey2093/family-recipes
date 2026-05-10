@@ -522,7 +522,7 @@ export default function AddRecipeModal({ defaultCategory, editRecipe, onClose }:
                       setField("category", e.target.value);
                       setField("subcategory", cat?.subcategories[0]?.id ?? "");
                     }}
-                    className={`w-full border rounded-xl px-3 py-3 text-sm focus:outline-none focus:border-recipe-navy ${errors.category ? "border-red-400 bg-red-50" : "border-gray-200"}`}
+                    className={`w-full border rounded-xl px-3 py-3 text-sm focus:outline-none focus:border-recipe-navy cursor-pointer ${errors.category ? "border-red-400 bg-red-50" : "border-gray-200"}`}
                   >
                     <option value="">Select…</option>
                     {CATEGORIES.map((c) => (
@@ -537,7 +537,7 @@ export default function AddRecipeModal({ defaultCategory, editRecipe, onClose }:
                     value={form.subcategory}
                     onChange={(e) => setField("subcategory", e.target.value)}
                     disabled={!form.category}
-                    className={`w-full border rounded-xl px-3 py-3 text-sm focus:outline-none focus:border-recipe-navy disabled:opacity-50 ${errors.subcategory ? "border-red-400 bg-red-50" : "border-gray-200"}`}
+                    className={`w-full border rounded-xl px-3 py-3 text-sm focus:outline-none focus:border-recipe-navy disabled:opacity-50 cursor-pointer ${errors.subcategory ? "border-red-400 bg-red-50" : "border-gray-200"}`}
                   >
                     <option value="">Select…</option>
                     {selectedCategory?.subcategories.map((s) => (
@@ -686,7 +686,7 @@ export default function AddRecipeModal({ defaultCategory, editRecipe, onClose }:
                       setField("category", e.target.value);
                       setField("subcategory", cat?.subcategories[0]?.id ?? "");
                     }}
-                    className="w-full border border-gray-300 rounded-xl px-3 py-3 text-sm focus:outline-none focus:border-recipe-navy bg-white"
+                    className="w-full border border-gray-300 rounded-xl px-3 py-3 text-sm focus:outline-none focus:border-recipe-navy bg-white cursor-pointer"
                   >
                     <option value="">Category…</option>
                     {CATEGORIES.map((c) => (
