@@ -29,72 +29,86 @@ export default function HomePage() {
     <>
       {/* Hero — sticky so content scrolls up over it */}
       <section
-        className="sticky top-16 overflow-hidden"
+        className="sticky top-16 overflow-hidden flex flex-col"
         style={{ height: "calc(100vh - 64px)", zIndex: 0 }}
       >
-        {/* Family photo */}
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src="/family-hero.jpg"
-          alt="The Ware Family"
-          className="absolute inset-0 w-full h-full object-cover object-center"
-        />
-
-        {/* Top overlay — navy tint over tree/sky area only, leaves all faces clear */}
+        {/* ── Sky-blue text panel ── */}
+        {/* Separate from the photo so text is never over faces */}
         <div
-          className="absolute inset-0 pointer-events-none"
+          className="relative flex-shrink-0 flex flex-col items-center justify-center px-6 text-center"
           style={{
-            background:
-              "linear-gradient(to bottom, rgba(27,58,92,0.87) 0%, rgba(27,58,92,0.42) 26%, transparent 46%)",
+            height: "38%",
+            background: "linear-gradient(135deg, #ffffff 0%, #f0f9ff 50%, #eff6ff 100%)",
           }}
-        />
-
-        {/* Bottom overlay — fades to navy so it flows into the stats bar */}
-        <div
-          className="absolute inset-0 pointer-events-none"
-          style={{
-            background:
-              "linear-gradient(to top, rgba(27,58,92,1) 0%, rgba(27,58,92,0.55) 14%, transparent 34%)",
-          }}
-        />
-
-        {/* Text — sits inside the top dark area, well above the faces */}
-        <div className="absolute inset-0 flex flex-col items-center justify-start pt-10 sm:pt-14 px-6 text-center">
-          <h1
-            className="font-playfair font-bold text-white leading-tight mb-3"
+        >
+          {/* Soft fade at the bottom of the blue panel into the photo */}
+          <div
+            className="absolute bottom-0 inset-x-0 pointer-events-none"
             style={{
-              fontSize: "clamp(2.4rem, 6vw, 4.5rem)",
-              textShadow: "0 2px 12px rgba(0,0,0,0.35)",
+              height: "60%",
+              background: "linear-gradient(to bottom, transparent 0%, rgba(240,249,255,0.85) 100%)",
             }}
+          />
+
+          <h1
+            className="relative font-playfair font-bold text-recipe-navy leading-tight mb-3"
+            style={{ fontSize: "clamp(2.2rem, 5.5vw, 4.2rem)" }}
           >
             Ware Family<br />
             <span className="text-recipe-pink">Kitchen</span>
           </h1>
-          <p
-            className="text-white/85 text-lg sm:text-xl max-w-xl mx-auto mb-8 leading-relaxed"
-            style={{ textShadow: "0 1px 6px rgba(0,0,0,0.45)" }}
-          >
+          <p className="relative text-gray-600 text-base sm:text-lg max-w-xl mx-auto mb-6 leading-relaxed">
             The best recipes from every corner of the family&nbsp;—&nbsp;lovingly collected right here.
           </p>
-          <div className="flex flex-col sm:flex-row gap-3 justify-center">
+          <div className="relative flex flex-col sm:flex-row gap-3 justify-center">
             <button
               onClick={() => openAddModal()}
-              className="inline-flex items-center gap-2 bg-recipe-pink text-white px-7 py-3.5 rounded-full font-bold text-base hover:bg-opacity-90 shadow-lg hover:shadow-xl transition-all"
+              className="inline-flex items-center gap-2 bg-recipe-pink text-white px-7 py-3 rounded-full font-bold text-sm sm:text-base hover:bg-opacity-90 shadow-md hover:shadow-lg transition-all"
             >
               + Share Your Recipe
             </button>
             <a
               href="#categories"
-              className="inline-flex items-center gap-2 bg-white/15 backdrop-blur-sm text-white px-7 py-3.5 rounded-full font-bold text-base hover:bg-white/25 border border-white/30 shadow-sm transition-all"
+              className="inline-flex items-center gap-2 bg-white text-recipe-navy px-7 py-3 rounded-full font-bold text-sm sm:text-base hover:bg-recipe-cream border border-recipe-navy/15 shadow-sm transition-all"
             >
               Browse Recipes ↓
             </a>
           </div>
         </div>
+
+        {/* ── Photo panel ── */}
+        <div className="relative flex-1 overflow-hidden">
+          {/* Sky-blue fade at top blends blue panel into photo */}
+          <div
+            className="absolute top-0 inset-x-0 z-10 pointer-events-none"
+            style={{
+              height: "28%",
+              background: "linear-gradient(to bottom, #f0f9ff 0%, transparent 100%)",
+            }}
+          />
+
+          {/* Family photo — object-top so we see the tops of heads first */}
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/family-hero.jpg"
+            alt="The Ware Family"
+            className="w-full h-full object-cover object-top"
+          />
+
+          {/* Navy fade at bottom — flows into stats bar as content scrolls over */}
+          <div
+            className="absolute bottom-0 inset-x-0 pointer-events-none"
+            style={{
+              height: "22%",
+              background: "linear-gradient(to top, rgba(27,58,92,1) 0%, transparent 100%)",
+            }}
+          />
+        </div>
       </section>
 
-      {/* Content — scrolls up over the sticky hero */}
-      <div id="categories" className="relative scroll-mt-16 bg-white" style={{ zIndex: 10 }}>
+      {/* Scrollable content — slides up over the sticky hero */}
+      {/* No bg set here so it inherits bg-recipe-cream from the body */}
+      <div id="categories" className="relative scroll-mt-16" style={{ zIndex: 10 }}>
 
         {/* Stats banner */}
         <div className="bg-recipe-navy text-white">
@@ -201,7 +215,7 @@ export default function HomePage() {
           </div>
         )}
 
-      </div>{/* end scrollable content */}
+      </div>
 
       {/* Floating plus button */}
       <button
