@@ -48,7 +48,7 @@ export default function HomePage() {
       <div className="sm:hidden">
         {/* Sky-blue text area */}
         <div
-          className="relative z-10 px-6 pt-8 pb-5 text-center"
+          className="px-6 pt-8 pb-5 text-center"
           style={{
             background: "linear-gradient(to bottom, #ffffff 0%, #f0f9ff 45%, #eff6ff 100%)",
           }}
@@ -69,7 +69,7 @@ export default function HomePage() {
         </div>
 
         {/* Photo with gradient overlay fading from sky-blue into the image */}
-        <div className="relative" style={{ marginTop: "-3rem" }}>
+        <div className="relative">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src="/family-hero.jpg"
@@ -79,8 +79,8 @@ export default function HomePage() {
           <div
             className="absolute inset-x-0 top-0 pointer-events-none"
             style={{
-              height: "45%",
-              background: "linear-gradient(to bottom, #eff6ff 0%, #eff6ff 22%, rgba(239,246,255,0.7) 55%, transparent 100%)",
+              height: "40%",
+              background: "linear-gradient(to bottom, #eff6ff 0%, rgba(239,246,255,0.85) 35%, transparent 100%)",
             }}
           />
         </div>
