@@ -33,7 +33,7 @@ export default function HomePage() {
         style={{ height: "calc(100vh - 64px)", zIndex: 0 }}
       >
         {/* Photo — starts behind the button row so the tree-line appears right below text */}
-        <div className="absolute inset-x-0 bottom-0" style={{ top: "10%" }}>
+        <div className="absolute inset-x-0 bottom-0" style={{ top: "11%" }}>
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src="/family-hero.jpg"
@@ -65,7 +65,7 @@ export default function HomePage() {
         {/* Sky-blue text panel — layered on top of the photo */}
         {/* Gradient fades out toward the bottom so photo shows through behind buttons */}
         <div
-          className="absolute inset-x-0 top-0 z-10 flex flex-col items-center justify-center px-6 text-center"
+          className="absolute inset-x-0 top-0 z-10 flex flex-col items-center justify-center px-6 text-center pt-6"
           style={{
             height: "34%",
             background:
