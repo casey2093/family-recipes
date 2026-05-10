@@ -56,7 +56,7 @@ export default function FilterDropdown({ value, onChange, options, placeholder, 
           <button
             type="button"
             onClick={() => { onChange(""); setOpen(false); }}
-            className={`w-full text-left px-4 py-2 text-sm cursor-pointer transition-colors
+            className={`w-full text-left px-4 py-2 text-sm cursor-pointer transition-colors rounded-xl mx-0 hover:bg-recipe-cream
               ${!value ? "text-recipe-pink font-semibold" : "text-gray-500 hover:text-recipe-pink"}`}
           >
             {placeholder}
@@ -67,7 +67,7 @@ export default function FilterDropdown({ value, onChange, options, placeholder, 
               key={option.value}
               type="button"
               onClick={() => { onChange(option.value); setOpen(false); }}
-              className={`w-full text-left px-4 py-2 text-sm cursor-pointer transition-colors
+              className={`w-full text-left px-4 py-2 text-sm cursor-pointer transition-colors hover:bg-recipe-cream
                 ${value === option.value
                   ? "text-recipe-pink font-semibold"
                   : "text-gray-700 hover:text-recipe-pink"}`}
