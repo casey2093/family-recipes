@@ -185,7 +185,7 @@ export default function AuthModal({ onClose, onSuccess, message }: Props) {
             {/* Register helper text */}
             {tab === "register" && (
               <p className="text-xs text-gray-500 leading-relaxed">
-                Already share recipes here? Use your exact name to claim your profile.
+                Already shared recipes here? Use your exact name to claim your profile.
               </p>
             )}
 
