@@ -29,13 +29,13 @@ export default function HomePage() {
     <>
       <button
         onClick={() => openAddModal()}
-        className="inline-flex items-center gap-2 bg-recipe-pink text-white px-7 py-3 rounded-full font-bold text-sm sm:text-base hover:bg-opacity-90 shadow-md hover:shadow-lg transition-all"
+        className="inline-flex items-center justify-center gap-2 bg-recipe-pink text-white px-7 py-3 rounded-full font-bold text-sm sm:text-base hover:bg-opacity-90 shadow-md hover:shadow-lg transition-all w-full sm:w-auto"
       >
         + Share Your Recipe
       </button>
       <a
         href="#categories"
-        className="inline-flex items-center gap-2 bg-white/70 backdrop-blur-sm text-recipe-navy px-7 py-3 rounded-full font-bold text-sm sm:text-base hover:bg-white/90 border border-recipe-navy/15 shadow-sm transition-all"
+        className="inline-flex items-center justify-center gap-2 bg-white/70 backdrop-blur-sm text-recipe-navy px-7 py-3 rounded-full font-bold text-sm sm:text-base hover:bg-white/90 border border-recipe-navy/15 shadow-sm transition-all w-full sm:w-auto"
       >
         Browse Recipes ↓
       </a>
@@ -48,7 +48,7 @@ export default function HomePage() {
       <div className="sm:hidden">
         {/* Sky-blue text area */}
         <div
-          className="px-6 pt-8 pb-5 text-center"
+          className="relative z-10 px-6 pt-8 pb-5 text-center"
           style={{
             background: "linear-gradient(to bottom, #ffffff 0%, #f0f9ff 45%, #eff6ff 100%)",
           }}
@@ -69,7 +69,7 @@ export default function HomePage() {
         </div>
 
         {/* Photo with gradient overlay fading from sky-blue into the image */}
-        <div className="relative">
+        <div className="relative" style={{ marginTop: "-5rem" }}>
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src="/family-hero.jpg"
@@ -79,8 +79,8 @@ export default function HomePage() {
           <div
             className="absolute inset-x-0 top-0 pointer-events-none"
             style={{
-              height: "28%",
-              background: "linear-gradient(to bottom, #eff6ff 0%, rgba(239,246,255,0.65) 45%, transparent 100%)",
+              height: "42%",
+              background: "linear-gradient(to bottom, #eff6ff 0%, rgba(239,246,255,0.75) 40%, transparent 100%)",
             }}
           />
         </div>
