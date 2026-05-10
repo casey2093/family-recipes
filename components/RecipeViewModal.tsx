@@ -5,6 +5,7 @@ import { Recipe } from "@/lib/types";
 import { getCategoryById, getSubcategoryName } from "@/lib/categories";
 import { useModal } from "@/context/ModalContext";
 import { useAuth } from "@/context/AuthContext";
+
 import RecipeCardFull from "./RecipeCardFull";
 import CommentsSection from "./CommentsSection";
 
@@ -18,7 +19,7 @@ export default function RecipeViewModal({ recipe, onClose, onDelete }: Props) {
   const category = getCategoryById(recipe.category);
   const subcategoryName = getSubcategoryName(recipe.category, recipe.subcategory);
   const { openEditModal } = useModal();
-  const { user } = useAuth();
+  const { user, openAuthModal } = useAuth();
   const [isFavorite, setIsFavorite] = useState(false);
   const [isCompleted, setIsCompleted] = useState(false);
   const [myName, setMyName] = useState("");
@@ -40,6 +41,7 @@ export default function RecipeViewModal({ recipe, onClose, onDelete }: Props) {
   }, [user]);
 
   const toggleFavorite = () => {
+    if (!user) { openAuthModal(); return; }
     const ids: string[] = JSON.parse(localStorage.getItem("wfk_favorites") ?? "[]");
     const newIds = isFavorite ? ids.filter((id) => id !== recipe.id) : [...ids, recipe.id];
     localStorage.setItem("wfk_favorites", JSON.stringify(newIds));
@@ -47,6 +49,7 @@ export default function RecipeViewModal({ recipe, onClose, onDelete }: Props) {
   };
 
   const toggleCompleted = () => {
+    if (!user) { openAuthModal(); return; }
     const ids: string[] = JSON.parse(localStorage.getItem("wfk_completed") ?? "[]");
     const newIds = isCompleted ? ids.filter((id) => id !== recipe.id) : [...ids, recipe.id];
     localStorage.setItem("wfk_completed", JSON.stringify(newIds));
@@ -98,7 +101,7 @@ export default function RecipeViewModal({ recipe, onClose, onDelete }: Props) {
           <span className="text-xl flex-shrink-0">{category?.emoji ?? "🍴"}</span>
           <h2 className="font-semibold text-recipe-navy text-sm sm:text-base leading-tight flex-1 min-w-0 truncate">
             {category?.name ?? recipe.category}
-            {subcategoryName && <span className="text-gray-500 font-normal"> — {subcategoryName}</span>}
+            {subcategoryName && <span className="text-gray-500 font-normal"> - {subcategoryName}</span>}
           </h2>
 
           {/* Mark as completed */}

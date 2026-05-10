@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Recipe } from "@/lib/types";
 import { getCategoryById, getSubcategoryName } from "@/lib/categories";
 import { useAuthors } from "@/context/AuthorsContext";
+import { useAuth } from "@/context/AuthContext";
 
 interface Props {
   recipe: Recipe;
@@ -23,6 +24,7 @@ export default function RecipeCardPreview({ recipe, onClick }: Props) {
   const category = getCategoryById(recipe.category);
   const authorsMap = useAuthors();
   const authorData = authorsMap[recipe.uploadedBy.toLowerCase()];
+  const { user, openAuthModal } = useAuth();
   const subcategoryName = getSubcategoryName(recipe.category, recipe.subcategory);
   const totalTime = recipe.prepTime + recipe.cookTime;
   const [isFavorite, setIsFavorite] = useState(false);
@@ -43,6 +45,7 @@ export default function RecipeCardPreview({ recipe, onClick }: Props) {
 
   const toggleFavorite = (e: React.MouseEvent) => {
     e.stopPropagation();
+    if (!user) { openAuthModal(); return; }
     const ids: string[] = JSON.parse(localStorage.getItem("wfk_favorites") ?? "[]");
     const wasFav = ids.includes(recipe.id);
     const newIds = wasFav ? ids.filter((id) => id !== recipe.id) : [...ids, recipe.id];
@@ -58,6 +61,7 @@ export default function RecipeCardPreview({ recipe, onClick }: Props) {
 
   const toggleCompleted = (e: React.MouseEvent) => {
     e.stopPropagation();
+    if (!user) { openAuthModal(); return; }
     const ids: string[] = JSON.parse(localStorage.getItem("wfk_completed") ?? "[]");
     const wasDone = ids.includes(recipe.id);
     const newIds = wasDone ? ids.filter((id) => id !== recipe.id) : [...ids, recipe.id];
