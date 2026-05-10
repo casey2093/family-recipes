@@ -7,6 +7,7 @@ import { Recipe, Author } from "@/lib/types";
 import { CATEGORIES } from "@/lib/categories";
 import { useModal } from "@/context/ModalContext";
 import { useAuth } from "@/context/AuthContext";
+import { useRefreshAuthors } from "@/context/AuthorsContext";
 import { uploadImage } from "@/lib/clientUpload";
 import RecipeCardPreview from "@/components/RecipeCardPreview";
 import RecipeViewModal from "@/components/RecipeViewModal";
@@ -17,6 +18,7 @@ export default function AuthorPage() {
   const name = decodeURIComponent(params.name as string);
   const { openAddModal } = useModal();
   const { user } = useAuth();
+  const refreshAuthors = useRefreshAuthors();
   const isOwnProfile = user?.name.toLowerCase() === name.toLowerCase();
 
   const [author, setAuthor] = useState<Author | null>(null);
@@ -100,6 +102,7 @@ export default function AuthorPage() {
         name: editName.trim(),
         imageUrl: editImageUrl || undefined,
       }));
+      refreshAuthors();
       setIsEditing(false);
     } finally {
       setSaving(false);
