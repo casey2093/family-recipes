@@ -99,7 +99,7 @@ export default function Navigation() {
             </Link>
 
             <Link href="/completed" className={navLinkClass(pathname === "/completed")}>
-              Completed
+              Completed Dishes
             </Link>
 
             {/* Categories dropdown */}
@@ -223,7 +223,7 @@ export default function Navigation() {
                 onClick={() => setMobileOpen(false)}
                 className={`flex items-center px-3 py-2.5 rounded-xl font-semibold mb-1 ${pathname === "/completed" ? "bg-recipe-navy text-white" : "text-recipe-navy hover:bg-recipe-cream"}`}
               >
-                Completed
+                Completed Dishes
               </Link>
 
               <Link

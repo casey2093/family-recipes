@@ -23,10 +23,13 @@ export default function RecipeCardPreview({ recipe, onClick }: Props) {
   const subcategoryName = getSubcategoryName(recipe.category, recipe.subcategory);
   const totalTime = recipe.prepTime + recipe.cookTime;
   const [isFavorite, setIsFavorite] = useState(false);
+  const [isCompleted, setIsCompleted] = useState(false);
 
   useEffect(() => {
-    const ids: string[] = JSON.parse(localStorage.getItem("wfk_favorites") ?? "[]");
-    setIsFavorite(ids.includes(recipe.id));
+    const favIds: string[] = JSON.parse(localStorage.getItem("wfk_favorites") ?? "[]");
+    setIsFavorite(favIds.includes(recipe.id));
+    const doneIds: string[] = JSON.parse(localStorage.getItem("wfk_completed") ?? "[]");
+    setIsCompleted(doneIds.includes(recipe.id));
   }, [recipe.id]);
 
   const toggleFavorite = (e: React.MouseEvent) => {
@@ -123,15 +126,26 @@ export default function RecipeCardPreview({ recipe, onClick }: Props) {
         </div>
       </button>
 
-      {/* Star button */}
-      <button
-        onClick={toggleFavorite}
-        aria-label={isFavorite ? "Remove from favorites" : "Add to favorites"}
-        className="absolute top-3 right-3 w-8 h-8 flex items-center justify-center rounded-full bg-white/90 shadow-sm text-lg transition-all hover:scale-110 z-10"
-        style={{ color: isFavorite ? "#E8608A" : "#d1d5db" }}
-      >
-        {isFavorite ? "★" : "☆"}
-      </button>
+      {/* Completed + Star buttons */}
+      <div className="absolute top-3 right-3 flex items-center gap-1.5 z-10">
+        {isCompleted && (
+          <div
+            className="w-8 h-8 flex items-center justify-center rounded-full bg-white/90 shadow-sm text-sm font-bold"
+            style={{ color: "#10B981" }}
+            title="You've made this!"
+          >
+            ✓
+          </div>
+        )}
+        <button
+          onClick={toggleFavorite}
+          aria-label={isFavorite ? "Remove from favorites" : "Add to favorites"}
+          className="w-8 h-8 flex items-center justify-center rounded-full bg-white/90 shadow-sm text-lg transition-all hover:scale-110"
+          style={{ color: isFavorite ? "#E8608A" : "#d1d5db" }}
+        >
+          {isFavorite ? "★" : "☆"}
+        </button>
+      </div>
     </div>
   );
 }
