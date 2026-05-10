@@ -60,7 +60,9 @@ export default function HomePage() {
         <div className="absolute bottom-0 left-0 w-48 h-48 bg-sky-200/40 rounded-full blur-2xl -z-0" />
       </section>
 
-      {/* Stats banner */}
+      {/* Stats banner + Categories — wrapped together so #categories anchor lands cleanly */}
+      <div id="categories" className="scroll-mt-16">
+
       <div className="bg-recipe-navy text-white">
         <div className="max-w-4xl mx-auto px-6 py-4 flex flex-wrap items-center justify-center gap-6 sm:gap-10 text-sm">
           <div className="flex items-center gap-2">
@@ -83,7 +85,7 @@ export default function HomePage() {
       </div>
 
       {/* Categories grid */}
-      <section id="categories" className="max-w-6xl mx-auto px-4 sm:px-6 py-14 scroll-mt-16">
+      <section className="max-w-6xl mx-auto px-4 sm:px-6 py-14">
         <div className="text-center mb-10">
           <h2 className="font-playfair font-bold text-recipe-navy text-3xl sm:text-4xl mb-2">
             Browse by Category
@@ -122,6 +124,8 @@ export default function HomePage() {
           })}
         </div>
       </section>
+
+      </div>{/* end #categories wrapper */}
 
       {/* Recently added */}
       {recent.length > 0 && (

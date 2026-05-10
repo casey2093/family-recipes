@@ -23,12 +23,12 @@ function FavoriteDashboard({ recipes }: { recipes: Recipe[] }) {
     <div className="bg-recipe-navy text-white">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 py-4 flex flex-wrap items-center justify-center gap-6 sm:gap-10 text-sm">
         <div className="flex items-center gap-2">
-          <span className="font-bold text-recipe-gold text-xl">{recipes.length}</span>
+          <span className="font-bold text-blue-200 text-xl">{recipes.length}</span>
           <span className="text-white/80">{recipes.length === 1 ? "Favorite" : "Favorites"}</span>
         </div>
         <div className="w-px h-4 bg-white/20 hidden sm:block" />
         <div className="flex items-center gap-2">
-          <span className="font-bold text-recipe-gold text-xl">{Object.keys(categoryCounts).length}</span>
+          <span className="font-bold text-blue-200 text-xl">{Object.keys(categoryCounts).length}</span>
           <span className="text-white/80">{Object.keys(categoryCounts).length === 1 ? "Category" : "Categories"}</span>
         </div>
         {topAuthor && (
