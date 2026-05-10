@@ -7,33 +7,8 @@ interface AuthorData {
   imageUrl?: string;
 }
 
-// Module-level singleton — one fetch per page load, shared across all avatar instances
-let authorsCache: Record<string, AuthorData> | null = null;
-let fetchPromise: Promise<void> | null = null;
-
-function ensureAuthors(): Promise<void> {
-  if (authorsCache !== null) return Promise.resolve();
-  if (!fetchPromise) {
-    fetchPromise = fetch("/api/authors", { cache: "no-store" })
-      .then((r) => r.json())
-      .then((authors: AuthorData[]) => {
-        authorsCache = {};
-        authors.forEach((a) => {
-          authorsCache![a.name.toLowerCase()] = a;
-        });
-      })
-      .catch(() => {
-        authorsCache = {};
-      });
-  }
-  return fetchPromise;
-}
-
-// Call this after a profile save to force a fresh fetch on next render
-export function invalidateAuthorsCache() {
-  authorsCache = null;
-  fetchPromise = null;
-}
+// Call this after a profile save (kept for compatibility, no-op now)
+export function invalidateAuthorsCache() {}
 
 interface Props {
   name: string;
@@ -51,15 +26,18 @@ const sizes: Record<string, { img: string; div: string; text: string }> = {
 };
 
 export default function AuthorAvatar({ name, size = "md", className = "", hoverOpacity = false }: Props) {
-  const [imageUrl, setImageUrl] = useState<string | null>(
-    authorsCache?.[name.toLowerCase()]?.imageUrl ?? null
-  );
+  const [imageUrl, setImageUrl] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
-    ensureAuthors().then(() => {
-      if (!cancelled) setImageUrl(authorsCache?.[name.toLowerCase()]?.imageUrl ?? null);
-    });
+    fetch("/api/authors")
+      .then((r) => r.json())
+      .then((authors: AuthorData[]) => {
+        if (cancelled) return;
+        const found = authors.find((a) => a.name.toLowerCase() === name.toLowerCase());
+        setImageUrl(found?.imageUrl ?? null);
+      })
+      .catch(() => {});
     return () => { cancelled = true; };
   }, [name]);
 
