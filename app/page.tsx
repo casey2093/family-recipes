@@ -46,12 +46,11 @@ export default function HomePage() {
     <>
       {/* ── Mobile hero (normal flow, full image, no cropping) ── */}
       <div className="sm:hidden">
-        {/* Sky-blue text area — background fades to transparent at bottom so photo blends in */}
+        {/* Sky-blue text area */}
         <div
-          className="relative z-10 px-6 pt-8 text-center"
+          className="px-6 pt-8 pb-5 text-center"
           style={{
-            background: "linear-gradient(to bottom, #ffffff 0%, #f0f9ff 45%, #eff6ff 68%, rgba(239,246,255,0.3) 85%, rgba(239,246,255,0) 100%)",
-            paddingBottom: "5.5rem",
+            background: "linear-gradient(to bottom, #ffffff 0%, #f0f9ff 45%, #eff6ff 100%)",
           }}
         >
           <h1
@@ -69,19 +68,28 @@ export default function HomePage() {
           </div>
         </div>
 
-        {/* Photo — pulled up to overlap the fade zone, with breathing room below buttons */}
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src="/family-hero.jpg"
-          alt="The Ware Family"
-          className="w-full block -mt-12"
-        />
+        {/* Photo with gradient overlay fading from sky-blue into the image */}
+        <div className="relative">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/family-hero.jpg"
+            alt="The Ware Family"
+            className="w-full block"
+          />
+          <div
+            className="absolute inset-x-0 top-0 pointer-events-none"
+            style={{
+              height: "28%",
+              background: "linear-gradient(to bottom, #eff6ff 0%, rgba(239,246,255,0.65) 45%, transparent 100%)",
+            }}
+          />
+        </div>
       </div>
 
       {/* ── Desktop hero (sticky, scroll-over effect) ── */}
       <div className="hidden sm:block sm:sticky sm:top-16 sm:overflow-hidden" style={{ height: "calc(100vh - 64px)", zIndex: 0 }}>
         {/* Photo */}
-        <div className="absolute inset-x-0 bottom-0" style={{ top: "14%" }}>
+        <div className="absolute inset-x-0 bottom-0" style={{ top: "22%" }}>
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src="/family-hero.jpg"

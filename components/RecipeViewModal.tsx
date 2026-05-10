@@ -85,10 +85,10 @@ export default function RecipeViewModal({ recipe, onClose, onDelete }: Props) {
   const isOwner = myName && recipe.uploadedBy.toLowerCase() === myName.toLowerCase();
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center pt-16 sm:pt-0 sm:p-4">
       <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} />
 
-      <div className="relative bg-recipe-cream w-full sm:max-w-3xl max-h-[96vh] sm:max-h-[90vh] rounded-t-3xl sm:rounded-3xl shadow-2xl flex flex-col overflow-hidden">
+      <div className="relative bg-recipe-cream w-full sm:max-w-3xl max-h-[calc(100vh-4rem)] sm:max-h-[90vh] rounded-t-3xl sm:rounded-3xl shadow-2xl flex flex-col overflow-hidden">
 
         <div className="flex justify-center pt-3 pb-1 flex-shrink-0 sm:hidden">
           <div className="w-10 h-1 bg-gray-300 rounded-full" />

@@ -214,6 +214,26 @@ export default function AuthorPage() {
             </span>
             <span className="text-white/80">Categories</span>
           </div>
+          {isOwnProfile && (
+            <>
+              <div className="w-px h-4 bg-white/20 hidden sm:block" />
+              <Link
+                href="/favorites"
+                className="flex items-center gap-1.5 text-white/80 hover:text-white transition-colors"
+              >
+                <span className="text-recipe-pink text-base">★</span>
+                <span>My Favorites</span>
+              </Link>
+              <div className="w-px h-4 bg-white/20 hidden sm:block" />
+              <Link
+                href="/completed"
+                className="flex items-center gap-1.5 text-white/80 hover:text-white transition-colors"
+              >
+                <span className="text-emerald-400 text-base font-bold">✓</span>
+                <span>Completed Dishes</span>
+              </Link>
+            </>
+          )}
         </div>
       </div>
 
