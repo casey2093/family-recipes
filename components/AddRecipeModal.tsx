@@ -23,6 +23,7 @@ import RecipeCardFull from "./RecipeCardFull";
 import AuthorInput from "./AuthorInput";
 import { uploadImage } from "@/lib/clientUpload";
 import { compressImage } from "@/lib/compressImage";
+import { useAuth } from "@/context/AuthContext";
 
 type Step = "method-select" | "manual" | "upload" | "processing" | "preview" | "edit" | "saved";
 
@@ -61,15 +62,21 @@ function formToPreviewRecipe(form: RecipeFormData): Recipe {
 
 
 export default function AddRecipeModal({ defaultCategory, editRecipe, onClose }: Props) {
+  const { user } = useAuth();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const dishImageInputRef = useRef<HTMLInputElement>(null);
   const profileImageInputRef = useRef<HTMLInputElement>(null);
 
   const isEditing = !!editRecipe;
   const [step, setStep] = useState<Step>(() => (editRecipe ? "edit" : "method-select"));
-  const [form, setForm] = useState<RecipeFormData>(() =>
-    editRecipe ? recipeToFormData(editRecipe) : buildInitialForm(defaultCategory)
-  );
+  const [form, setForm] = useState<RecipeFormData>(() => {
+    const base = editRecipe ? recipeToFormData(editRecipe) : buildInitialForm(defaultCategory);
+    // Pre-fill name from auth if available
+    if (!editRecipe && user?.name) {
+      base.uploadedBy = user.name;
+    }
+    return base;
+  });
   const [recipeImages, setRecipeImages] = useState<Array<{ preview: string; base64: string; mediaType: string }>>([]);
   const [processingError, setProcessingError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -91,6 +98,14 @@ export default function AddRecipeModal({ defaultCategory, editRecipe, onClose }:
   useEffect(() => {
     fetch("/api/authors").then((r) => r.json()).then(setAuthors).catch(() => {});
   }, []);
+
+  // Sync auth user's name into form if not already set
+  useEffect(() => {
+    if (user?.name && !form.uploadedBy) {
+      setField("uploadedBy", user.name);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user]);
 
   // Close on Escape
   useEffect(() => {
@@ -252,6 +267,11 @@ export default function AddRecipeModal({ defaultCategory, editRecipe, onClose }:
       if (isEditing) {
         onClose();
         window.location.reload();
+        return;
+      }
+      // If user is already logged in, skip profile creation step
+      if (user) {
+        onClose();
         return;
       }
       const hasProfile = authors.some(
@@ -628,12 +648,22 @@ export default function AddRecipeModal({ defaultCategory, editRecipe, onClose }:
 
               <div>
                 <label className="block text-sm font-bold text-recipe-navy mb-1.5">Your Name *</label>
-                <AuthorInput
-                  value={form.uploadedBy}
-                  onChange={(name) => setField("uploadedBy", name)}
-                  authors={authors}
-                  error={errors.uploadedBy}
-                />
+                {user ? (
+                  <div className="flex items-center gap-2 px-4 py-3 border border-gray-200 rounded-xl bg-gray-50 text-sm">
+                    <div className="w-5 h-5 rounded-full bg-recipe-rose flex items-center justify-center text-recipe-pink text-xs font-bold flex-shrink-0">
+                      {user.name.charAt(0).toUpperCase()}
+                    </div>
+                    <span className="font-semibold text-recipe-navy">{user.name}</span>
+                    <span className="ml-auto text-xs text-gray-400">Signed in</span>
+                  </div>
+                ) : (
+                  <AuthorInput
+                    value={form.uploadedBy}
+                    onChange={(name) => setField("uploadedBy", name)}
+                    authors={authors}
+                    error={errors.uploadedBy}
+                  />
+                )}
               </div>
             </div>
           )}
@@ -705,16 +735,18 @@ export default function AddRecipeModal({ defaultCategory, editRecipe, onClose }:
               </div>
 
               {/* Name field */}
-              <div className="bg-recipe-cream rounded-xl p-4 space-y-2">
-                <label className="block text-sm font-bold text-recipe-navy">
-                  One last thing — who&apos;s adding this recipe? *
-                </label>
-                <AuthorInput
-                  value={form.uploadedBy}
-                  onChange={(name) => setField("uploadedBy", name)}
-                  authors={authors}
-                />
-              </div>
+              {!user && (
+                <div className="bg-recipe-cream rounded-xl p-4 space-y-2">
+                  <label className="block text-sm font-bold text-recipe-navy">
+                    One last thing — who&apos;s adding this recipe? *
+                  </label>
+                  <AuthorInput
+                    value={form.uploadedBy}
+                    onChange={(name) => setField("uploadedBy", name)}
+                    authors={authors}
+                  />
+                </div>
+              )}
             </div>
           )}
 

@@ -28,3 +28,12 @@ export async function kvSet(key: string, value: unknown): Promise<void> {
   });
   if (!res.ok) throw new Error(`KV write failed: ${res.status}`);
 }
+
+export async function kvDel(key: string): Promise<void> {
+  if (!KV_URL || !KV_TOKEN) return;
+  await fetch(KV_URL, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${KV_TOKEN}`, "Content-Type": "application/json" },
+    body: JSON.stringify(["DEL", key]),
+  });
+}

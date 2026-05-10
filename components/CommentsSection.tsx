@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { Comment } from "@/lib/types";
 import { uploadImage } from "@/lib/clientUpload";
+import { useAuth } from "@/context/AuthContext";
 
 function timeAgo(isoString: string): string {
   const diff = Date.now() - new Date(isoString).getTime();
@@ -26,6 +27,7 @@ interface ImagePreview {
 }
 
 export default function CommentsSection({ recipeId }: Props) {
+  const { user } = useAuth();
   const [comments, setComments] = useState<Comment[]>([]);
   const [newText, setNewText] = useState("");
   const [newAuthor, setNewAuthor] = useState("");
@@ -43,13 +45,14 @@ export default function CommentsSection({ recipeId }: Props) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const replyFileInputRef = useRef<HTMLInputElement>(null);
 
+  // Sync author name from auth (preferred) or localStorage fallback
   useEffect(() => {
-    const name = localStorage.getItem("wfk_author_name") ?? "";
+    const name = user?.name ?? localStorage.getItem("wfk_author_name") ?? "";
     setMyName(name);
     setNewAuthor(name);
     setReplyAuthor(name);
     setLikedIds(JSON.parse(localStorage.getItem(`wfk_liked_${recipeId}`) ?? "[]"));
-  }, [recipeId]);
+  }, [recipeId, user]);
 
   useEffect(() => {
     fetch(`/api/comments?recipeId=${recipeId}`)
@@ -309,13 +312,22 @@ export default function CommentsSection({ recipeId }: Props) {
 
             {replyingTo === comment.id && (
               <div className="mt-3 space-y-2">
-                <input
-                  type="text"
-                  value={replyAuthor}
-                  onChange={(e) => setReplyAuthor(e.target.value)}
-                  placeholder="Your name"
-                  className="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-recipe-navy bg-white"
-                />
+                {user ? (
+                  <div className="flex items-center gap-2 px-3 py-2 bg-white border border-gray-200 rounded-xl text-sm">
+                    <div className="w-5 h-5 rounded-full bg-recipe-rose flex items-center justify-center text-recipe-pink text-xs font-bold flex-shrink-0">
+                      {user.name.charAt(0).toUpperCase()}
+                    </div>
+                    <span className="font-semibold text-recipe-navy">{user.name}</span>
+                  </div>
+                ) : (
+                  <input
+                    type="text"
+                    value={replyAuthor}
+                    onChange={(e) => setReplyAuthor(e.target.value)}
+                    placeholder="Your name"
+                    className="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-recipe-navy bg-white"
+                  />
+                )}
                 <textarea
                   value={replyText}
                   onChange={(e) => setReplyText(e.target.value)}
@@ -401,13 +413,22 @@ export default function CommentsSection({ recipeId }: Props) {
       {/* New comment form */}
       <div className="bg-recipe-cream rounded-2xl p-4 space-y-3">
         <p className="text-sm font-bold text-recipe-navy">Leave a comment</p>
-        <input
-          type="text"
-          value={newAuthor}
-          onChange={(e) => setNewAuthor(e.target.value)}
-          placeholder="Your name"
-          className="w-full border border-gray-300 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-recipe-navy bg-white"
-        />
+        {user ? (
+          <div className="flex items-center gap-2 px-3 py-2.5 bg-white border border-gray-200 rounded-xl text-sm">
+            <div className="w-5 h-5 rounded-full bg-recipe-rose flex items-center justify-center text-recipe-pink text-xs font-bold flex-shrink-0">
+              {user.name.charAt(0).toUpperCase()}
+            </div>
+            <span className="font-semibold text-recipe-navy">{user.name}</span>
+          </div>
+        ) : (
+          <input
+            type="text"
+            value={newAuthor}
+            onChange={(e) => setNewAuthor(e.target.value)}
+            placeholder="Your name"
+            className="w-full border border-gray-300 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-recipe-navy bg-white"
+          />
+        )}
         <textarea
           value={newText}
           onChange={(e) => setNewText(e.target.value)}

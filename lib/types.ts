@@ -46,6 +46,7 @@ export interface Author {
   id: string;
   name: string;
   imageUrl?: string;
+  passwordHash?: string;
   createdAt: string;
 }
 

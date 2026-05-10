@@ -9,7 +9,9 @@ async function readAuthors(): Promise<Author[]> {
 
 export async function GET() {
   const authors = await readAuthors();
-  return NextResponse.json(authors);
+  // Never expose password hashes to the client
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  return NextResponse.json(authors.map(({ passwordHash: _ph, ...safe }) => safe));
 }
 
 export async function POST(request: Request) {
@@ -30,7 +32,9 @@ export async function POST(request: Request) {
         imageUrl: body.imageUrl !== undefined ? body.imageUrl : existing.imageUrl,
       };
       await kvSet("authors", authors.map((a) => (a.id === existing.id ? updated : a)));
-      return NextResponse.json(updated);
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { passwordHash: _ph1, ...safeUpdated } = updated;
+      return NextResponse.json(safeUpdated);
     }
 
     const author: Author = {
@@ -40,7 +44,9 @@ export async function POST(request: Request) {
       createdAt: new Date().toISOString(),
     };
     await kvSet("authors", [...authors, author]);
-    return NextResponse.json(author, { status: 201 });
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { passwordHash: _ph2, ...safeAuthor } = author;
+    return NextResponse.json(safeAuthor, { status: 201 });
   } catch (error) {
     console.error("Error saving author:", error);
     return NextResponse.json({ error: "Failed to save author" }, { status: 500 });

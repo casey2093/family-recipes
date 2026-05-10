@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { Recipe } from "@/lib/types";
 import { getCategoryById } from "@/lib/categories";
 import { useModal } from "@/context/ModalContext";
+import { useAuth } from "@/context/AuthContext";
 import RecipeCardFull from "./RecipeCardFull";
 import CommentsSection from "./CommentsSection";
 
@@ -16,6 +17,7 @@ interface Props {
 export default function RecipeViewModal({ recipe, onClose, onDelete }: Props) {
   const category = getCategoryById(recipe.category);
   const { openEditModal } = useModal();
+  const { user } = useAuth();
   const [isFavorite, setIsFavorite] = useState(false);
   const [isCompleted, setIsCompleted] = useState(false);
   const [myName, setMyName] = useState("");
@@ -29,8 +31,12 @@ export default function RecipeViewModal({ recipe, onClose, onDelete }: Props) {
     setIsFavorite(ids.includes(recipe.id));
     const completed: string[] = JSON.parse(localStorage.getItem("wfk_completed") ?? "[]");
     setIsCompleted(completed.includes(recipe.id));
-    setMyName(localStorage.getItem("wfk_author_name") ?? "");
   }, [recipe.id]);
+
+  // Prefer auth user name; fall back to localStorage
+  useEffect(() => {
+    setMyName(user?.name ?? localStorage.getItem("wfk_author_name") ?? "");
+  }, [user]);
 
   const toggleFavorite = () => {
     const ids: string[] = JSON.parse(localStorage.getItem("wfk_favorites") ?? "[]");

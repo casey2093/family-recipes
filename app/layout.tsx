@@ -3,6 +3,7 @@ import { Playfair_Display, Nunito } from "next/font/google";
 import "./globals.css";
 import Navigation from "@/components/Navigation";
 import { ModalProvider } from "@/context/ModalContext";
+import { AuthProvider } from "@/context/AuthContext";
 
 const playfair = Playfair_Display({
   subsets: ["latin"],
@@ -25,10 +26,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en">
       <body className={`${playfair.variable} ${nunito.variable} antialiased`}>
-        <ModalProvider>
-          <Navigation />
-          <main className="min-h-screen pt-16">{children}</main>
-        </ModalProvider>
+        <AuthProvider>
+          <ModalProvider>
+            <Navigation />
+            <main className="min-h-screen pt-16">{children}</main>
+          </ModalProvider>
+        </AuthProvider>
       </body>
     </html>
   );

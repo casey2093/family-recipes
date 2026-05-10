@@ -5,19 +5,16 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { CATEGORIES } from "@/lib/categories";
 import { useModal } from "@/context/ModalContext";
+import { useAuth } from "@/context/AuthContext";
 
 export default function Navigation() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [categoriesOpen, setCategoriesOpen] = useState(false);
   const [mobileCategoriesOpen, setMobileCategoriesOpen] = useState(false);
-  const [myName, setMyName] = useState<string | null>(null);
   const pathname = usePathname();
   const { openAddModal } = useModal();
+  const { user, loading: authLoading, openAuthModal, logout } = useAuth();
   const categoriesRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    setMyName(localStorage.getItem("wfk_author_name"));
-  }, []);
 
   // Close dropdown on outside click
   useEffect(() => {
@@ -85,10 +82,10 @@ export default function Navigation() {
               Home
             </Link>
 
-            {myName && (
+            {user && (
               <Link
-                href={`/author/${encodeURIComponent(myName)}`}
-                className={navLinkClass(pathname === `/author/${encodeURIComponent(myName)}`)}
+                href={`/author/${encodeURIComponent(user.name)}`}
+                className={navLinkClass(pathname === `/author/${encodeURIComponent(user.name)}`)}
               >
                 My Recipes
               </Link>
@@ -153,7 +150,7 @@ export default function Navigation() {
             </Link>
           </nav>
 
-          {/* Add Recipe + hamburger */}
+          {/* Right side: Add Recipe + Auth + hamburger */}
           <div className="flex items-center gap-2 flex-shrink-0">
             <button
               onClick={() => openAddModal()}
@@ -161,6 +158,37 @@ export default function Navigation() {
             >
               <span className="text-lg leading-none">+</span> Add Recipe
             </button>
+
+            {/* Auth area */}
+            {!authLoading && (
+              user ? (
+                <div className="hidden lg:flex items-center gap-2">
+                  <Link
+                    href={`/author/${encodeURIComponent(user.name)}`}
+                    className="flex items-center gap-1.5 text-sm font-semibold text-recipe-navy hover:text-recipe-pink transition-colors"
+                  >
+                    <div className="w-7 h-7 rounded-full bg-recipe-rose flex items-center justify-center text-recipe-pink text-xs font-bold">
+                      {user.name.charAt(0).toUpperCase()}
+                    </div>
+                    <span className="max-w-[100px] truncate">{user.name}</span>
+                  </Link>
+                  <button
+                    onClick={() => logout()}
+                    className="text-xs text-gray-400 hover:text-gray-600 font-medium px-2 py-1 rounded-full hover:bg-gray-100"
+                  >
+                    Sign out
+                  </button>
+                </div>
+              ) : (
+                <button
+                  onClick={openAuthModal}
+                  className="hidden lg:flex items-center gap-1 text-sm font-semibold text-gray-600 hover:text-recipe-navy px-3 py-1.5 rounded-full hover:bg-recipe-cream transition-all"
+                >
+                  Sign In
+                </button>
+              )
+            )}
+
             <button
               className="lg:hidden p-2 rounded-lg text-gray-600 hover:bg-recipe-cream"
               onClick={() => setMobileOpen(true)}
@@ -191,6 +219,24 @@ export default function Navigation() {
               </button>
             </div>
 
+            {/* Mobile user info */}
+            {user && (
+              <div className="flex items-center gap-3 px-5 py-3 bg-recipe-cream border-b border-gray-100">
+                <div className="w-9 h-9 rounded-full bg-recipe-rose flex items-center justify-center text-recipe-pink font-bold">
+                  {user.name.charAt(0).toUpperCase()}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="font-semibold text-recipe-navy text-sm truncate">{user.name}</p>
+                  <button
+                    onClick={() => { logout(); setMobileOpen(false); }}
+                    className="text-xs text-gray-400 hover:text-recipe-pink"
+                  >
+                    Sign out
+                  </button>
+                </div>
+              </div>
+            )}
+
             <nav className="flex-1 overflow-y-auto py-4 px-3">
               <Link
                 href="/"
@@ -200,11 +246,11 @@ export default function Navigation() {
                 Home
               </Link>
 
-              {myName && (
+              {user && (
                 <Link
-                  href={`/author/${encodeURIComponent(myName)}`}
+                  href={`/author/${encodeURIComponent(user.name)}`}
                   onClick={() => setMobileOpen(false)}
-                  className={`flex items-center px-3 py-2.5 rounded-xl font-semibold mb-1 ${pathname === `/author/${encodeURIComponent(myName)}` ? "bg-recipe-navy text-white" : "text-recipe-navy hover:bg-recipe-cream"}`}
+                  className={`flex items-center px-3 py-2.5 rounded-xl font-semibold mb-1 ${pathname === `/author/${encodeURIComponent(user.name)}` ? "bg-recipe-navy text-white" : "text-recipe-navy hover:bg-recipe-cream"}`}
                 >
                   My Recipes
                 </Link>
@@ -266,7 +312,15 @@ export default function Navigation() {
               )}
             </nav>
 
-            <div className="p-4 border-t border-gray-100">
+            <div className="p-4 border-t border-gray-100 space-y-2">
+              {!user && (
+                <button
+                  onClick={() => { setMobileOpen(false); openAuthModal(); }}
+                  className="w-full border-2 border-recipe-navy text-recipe-navy py-3 rounded-xl font-bold text-sm hover:bg-recipe-cream"
+                >
+                  Sign In / Create Account
+                </button>
+              )}
               <button
                 onClick={() => { setMobileOpen(false); openAddModal(); }}
                 className="w-full bg-recipe-pink text-white py-3 rounded-xl font-bold text-sm hover:bg-opacity-90"
