@@ -10,6 +10,7 @@ import { useAuth } from "@/context/AuthContext";
 import { uploadImage } from "@/lib/clientUpload";
 import RecipeCardPreview from "@/components/RecipeCardPreview";
 import RecipeViewModal from "@/components/RecipeViewModal";
+import FilterDropdown from "@/components/FilterDropdown";
 
 export default function AuthorPage() {
   const params = useParams();
@@ -226,27 +227,19 @@ export default function AuthorPage() {
               placeholder="Search recipes…"
               className="flex-1 min-w-[180px] border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-recipe-navy"
             />
-            <select
+            <FilterDropdown
               value={selectedCategory}
-              onChange={(e) => setSelectedCategory(e.target.value)}
-              className="border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-recipe-navy bg-white cursor-pointer"
-            >
-              <option value="">All categories</option>
-              {CATEGORIES.map((c) => (
-                <option key={c.id} value={c.id}>{c.name}</option>
-              ))}
-            </select>
+              onChange={setSelectedCategory}
+              placeholder="All categories"
+              options={CATEGORIES.map((c) => ({ value: c.id, label: c.name }))}
+            />
             {selectedCategoryData && (
-              <select
+              <FilterDropdown
                 value={selectedSubcategory}
-                onChange={(e) => setSelectedSubcategory(e.target.value)}
-                className="border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-recipe-navy bg-white cursor-pointer"
-              >
-                <option value="">All subcategories</option>
-                {selectedCategoryData.subcategories.map((s) => (
-                  <option key={s.id} value={s.id}>{s.name}</option>
-                ))}
-              </select>
+                onChange={setSelectedSubcategory}
+                placeholder="All subcategories"
+                options={selectedCategoryData.subcategories.map((s) => ({ value: s.id, label: s.name }))}
+              />
             )}
           </div>
         )}
