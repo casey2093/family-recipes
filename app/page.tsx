@@ -33,12 +33,12 @@ export default function HomePage() {
         style={{ height: "calc(100vh - 64px)", zIndex: 0 }}
       >
         {/* Photo — starts behind the button row so the tree-line appears right below text */}
-        <div className="absolute inset-x-0 bottom-0 top-[19%] sm:top-[14%]">
+        <div className="absolute inset-x-0 bottom-0 top-[23%] sm:top-[14%]" style={{ backgroundColor: "rgba(27,58,92,1)" }}>
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src="/family-hero.jpg"
             alt="The Ware Family"
-            className="w-full h-full object-cover"
+            className="w-full h-full object-contain object-top sm:object-cover"
             style={{ objectPosition: "center 8%" }}
           />
 
