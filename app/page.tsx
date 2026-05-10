@@ -50,8 +50,8 @@ export default function HomePage() {
         <div
           className="relative z-10 px-6 pt-8 text-center"
           style={{
-            background: "linear-gradient(to bottom, #ffffff 0%, #f0f9ff 35%, #eff6ff 60%, rgba(239,246,255,0) 100%)",
-            paddingBottom: "4rem",
+            background: "linear-gradient(to bottom, #ffffff 0%, #f0f9ff 45%, #eff6ff 68%, rgba(239,246,255,0.3) 85%, rgba(239,246,255,0) 100%)",
+            paddingBottom: "5.5rem",
           }}
         >
           <h1
@@ -64,17 +64,17 @@ export default function HomePage() {
           <p className="text-gray-600 text-base max-w-xs mx-auto mb-6 leading-relaxed">
             The best recipes from every corner of the family&nbsp;—&nbsp;lovingly collected right here.
           </p>
-          <div className="flex flex-col gap-3">
+          <div className="flex flex-col gap-3 items-center">
             {categoryButtons}
           </div>
         </div>
 
-        {/* Photo pulled up to sit behind the fade area of the text panel */}
+        {/* Photo — pulled up to overlap the fade zone, with breathing room below buttons */}
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src="/family-hero.jpg"
           alt="The Ware Family"
-          className="w-full block -mt-16"
+          className="w-full block -mt-12"
         />
       </div>
 
@@ -100,14 +100,6 @@ export default function HomePage() {
             }}
           />
 
-          {/* Bottom fade — to navy for stats bar */}
-          <div
-            className="absolute bottom-0 inset-x-0 pointer-events-none"
-            style={{
-              height: "18%",
-              background: "linear-gradient(to top, rgba(27,58,92,1) 0%, transparent 100%)",
-            }}
-          />
         </div>
 
         {/* Sky-blue text panel */}
