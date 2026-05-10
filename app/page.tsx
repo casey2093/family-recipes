@@ -25,24 +25,69 @@ export default function HomePage() {
 
   const recent = recipes.slice(0, 6);
 
+  const categoryButtons = (
+    <>
+      <button
+        onClick={() => openAddModal()}
+        className="inline-flex items-center gap-2 bg-recipe-pink text-white px-7 py-3 rounded-full font-bold text-sm sm:text-base hover:bg-opacity-90 shadow-md hover:shadow-lg transition-all"
+      >
+        + Share Your Recipe
+      </button>
+      <a
+        href="#categories"
+        className="inline-flex items-center gap-2 bg-white/70 backdrop-blur-sm text-recipe-navy px-7 py-3 rounded-full font-bold text-sm sm:text-base hover:bg-white/90 border border-recipe-navy/15 shadow-sm transition-all"
+      >
+        Browse Recipes ↓
+      </a>
+    </>
+  );
+
   return (
     <>
-      {/* Hero — sticky so content scrolls up over it */}
-      <section
-        className="sticky top-16 overflow-hidden"
-        style={{ height: "calc(100vh - 64px)", zIndex: 0 }}
-      >
-        {/* Photo — starts behind the button row so the tree-line appears right below text */}
-        <div className="absolute inset-x-0 bottom-0 top-[23%] sm:top-[14%]" style={{ backgroundColor: "rgba(27,58,92,1)" }}>
+      {/* ── Mobile hero (normal flow, full image, no cropping) ── */}
+      <div className="sm:hidden">
+        {/* Sky-blue text area */}
+        <div
+          className="px-6 pt-14 pb-7 text-center"
+          style={{ background: "linear-gradient(135deg, #ffffff 0%, #f0f9ff 50%, #eff6ff 100%)" }}
+        >
+          <h1
+            className="font-playfair font-bold text-recipe-navy leading-tight mb-3"
+            style={{ fontSize: "clamp(2.2rem, 10vw, 3rem)" }}
+          >
+            Ware Family<br />
+            <span className="text-recipe-pink">Kitchen</span>
+          </h1>
+          <p className="text-gray-600 text-base max-w-xs mx-auto mb-6 leading-relaxed">
+            The best recipes from every corner of the family&nbsp;—&nbsp;lovingly collected right here.
+          </p>
+          <div className="flex flex-col gap-3">
+            {categoryButtons}
+          </div>
+        </div>
+
+        {/* Full-width photo at natural proportions — no cropping, no blank space */}
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src="/family-hero.jpg"
+          alt="The Ware Family"
+          className="w-full block"
+        />
+      </div>
+
+      {/* ── Desktop hero (sticky, scroll-over effect) ── */}
+      <div className="hidden sm:block sm:sticky sm:top-16 sm:overflow-hidden" style={{ height: "calc(100vh - 64px)", zIndex: 0 }}>
+        {/* Photo */}
+        <div className="absolute inset-x-0 bottom-0" style={{ top: "14%" }}>
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src="/family-hero.jpg"
             alt="The Ware Family"
-            className="w-full h-full object-contain object-top sm:object-cover"
+            className="w-full h-full object-cover"
             style={{ objectPosition: "center 8%" }}
           />
 
-          {/* Top fade — sky-blue washing over the tree tops, blending with the text panel */}
+          {/* Top fade — sky-blue over tree tops */}
           <div
             className="absolute top-0 inset-x-0 pointer-events-none"
             style={{
@@ -52,7 +97,7 @@ export default function HomePage() {
             }}
           />
 
-          {/* Bottom fade — fades to navy, flows into the stats bar */}
+          {/* Bottom fade — to navy for stats bar */}
           <div
             className="absolute bottom-0 inset-x-0 pointer-events-none"
             style={{
@@ -62,10 +107,9 @@ export default function HomePage() {
           />
         </div>
 
-        {/* Sky-blue text panel — layered on top of the photo */}
-        {/* Gradient fades out toward the bottom so photo shows through behind buttons */}
+        {/* Sky-blue text panel */}
         <div
-          className="absolute inset-x-0 top-0 z-10 flex flex-col items-center justify-center px-6 text-center pt-14 sm:pt-6"
+          className="absolute inset-x-0 top-0 z-10 flex flex-col items-center justify-center px-6 text-center pt-6"
           style={{
             height: "34%",
             background:
@@ -83,23 +127,12 @@ export default function HomePage() {
             The best recipes from every corner of the family&nbsp;—&nbsp;lovingly collected right here.
           </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
-            <button
-              onClick={() => openAddModal()}
-              className="inline-flex items-center gap-2 bg-recipe-pink text-white px-7 py-3 rounded-full font-bold text-sm sm:text-base hover:bg-opacity-90 shadow-md hover:shadow-lg transition-all"
-            >
-              + Share Your Recipe
-            </button>
-            <a
-              href="#categories"
-              className="inline-flex items-center gap-2 bg-white/70 backdrop-blur-sm text-recipe-navy px-7 py-3 rounded-full font-bold text-sm sm:text-base hover:bg-white/90 border border-recipe-navy/15 shadow-sm transition-all"
-            >
-              Browse Recipes ↓
-            </a>
+            {categoryButtons}
           </div>
         </div>
-      </section>
+      </div>
 
-      {/* Scrollable content — slides up over the sticky hero */}
+      {/* Scrollable content */}
       <div id="categories" className="relative scroll-mt-16 bg-recipe-cream" style={{ zIndex: 10 }}>
 
         {/* Stats banner */}
@@ -125,7 +158,7 @@ export default function HomePage() {
         </div>
 
         {/* Categories grid */}
-        <section className="max-w-6xl mx-auto px-4 sm:px-6 py-14" style={{ maxWidth: "100%" }}>
+        <section className="px-4 sm:px-6 py-14">
           <div className="max-w-6xl mx-auto">
             <div className="text-center mb-10">
               <h2 className="font-playfair font-bold text-recipe-navy text-3xl sm:text-4xl mb-2">
