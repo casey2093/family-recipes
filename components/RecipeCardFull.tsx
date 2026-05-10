@@ -162,9 +162,19 @@ export default function RecipeCardFull({ recipe, showMeta = true }: Props) {
           </div>
           <div className="flex items-center gap-1 font-medium">
             <span className="text-gray-400">{category?.emoji}</span>
-            <span className="text-recipe-navy capitalize">{category?.name ?? recipe.category}</span>
+            <Link
+              href={`/${recipe.category}`}
+              className="text-recipe-navy capitalize hover:text-recipe-pink transition-colors"
+            >
+              {category?.name ?? recipe.category}
+            </Link>
             <span className="text-gray-400 mx-0.5">›</span>
-            <span className="capitalize">{subcategoryName}</span>
+            <Link
+              href={`/${recipe.category}`}
+              className="capitalize hover:text-recipe-pink transition-colors"
+            >
+              {subcategoryName}
+            </Link>
           </div>
         </div>
       )}
