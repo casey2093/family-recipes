@@ -42,7 +42,7 @@ export default function CommentsSection({ recipeId }: Props) {
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [deleteConfirmName, setDeleteConfirmName] = useState("");
   const [deleteError, setDeleteError] = useState("");
-  const [lightboxUrl, setLightboxUrl] = useState<string | null>(null);
+  const [lightbox, setLightbox] = useState<{ urls: string[]; index: number } | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const replyFileInputRef = useRef<HTMLInputElement>(null);
 
@@ -198,6 +198,23 @@ export default function CommentsSection({ recipeId }: Props) {
     setDeletingId(null);
   };
 
+  const openLightbox = (urls: string[], index: number) => setLightbox({ urls, index });
+  const closeLightbox = () => setLightbox(null);
+  const lightboxPrev = () => setLightbox((lb) => lb && lb.urls.length > 1 ? { ...lb, index: (lb.index - 1 + lb.urls.length) % lb.urls.length } : lb);
+  const lightboxNext = () => setLightbox((lb) => lb && lb.urls.length > 1 ? { ...lb, index: (lb.index + 1) % lb.urls.length } : lb);
+
+  useEffect(() => {
+    if (!lightbox) return;
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === "ArrowLeft") lightboxPrev();
+      else if (e.key === "ArrowRight") lightboxNext();
+      else if (e.key === "Escape") closeLightbox();
+    };
+    document.addEventListener("keydown", handler);
+    return () => document.removeEventListener("keydown", handler);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [lightbox]);
+
   const allImages = (comment: Comment) => [
     ...(comment.imageUrls ?? []),
     ...(comment.imageUrl && !comment.imageUrls?.length ? [comment.imageUrl] : []),
@@ -284,7 +301,7 @@ export default function CommentsSection({ recipeId }: Props) {
               <div className={`grid gap-2 mb-2 ${allImages(comment).length > 1 ? "grid-cols-2" : "grid-cols-1 max-w-xs"}`}>
                 {allImages(comment).map((url, i) => (
                   // eslint-disable-next-line @next/next/no-img-element
-                  <img key={i} src={url} alt="Comment image" className="rounded-xl w-full max-h-48 object-cover cursor-pointer hover:opacity-90 transition-opacity" onClick={() => setLightboxUrl(url)} />
+                  <img key={i} src={url} alt="Comment image" className="rounded-xl w-full max-h-48 object-cover cursor-pointer hover:opacity-90 transition-opacity" onClick={() => openLightbox(allImages(comment), i)} />
                 ))}
               </div>
             )}
@@ -399,7 +416,7 @@ export default function CommentsSection({ recipeId }: Props) {
                       <div className={`grid gap-1.5 mt-1.5 ${reply.imageUrls.length > 1 ? "grid-cols-2" : "grid-cols-1 max-w-[12rem]"}`}>
                         {reply.imageUrls.map((url, i) => (
                           // eslint-disable-next-line @next/next/no-img-element
-                          <img key={i} src={url} alt="Reply image" className="rounded-lg w-full max-h-36 object-cover cursor-pointer hover:opacity-90 transition-opacity" onClick={() => setLightboxUrl(url)} />
+                          <img key={i} src={url} alt="Reply image" className="rounded-lg w-full max-h-36 object-cover cursor-pointer hover:opacity-90 transition-opacity" onClick={() => openLightbox(reply.imageUrls ?? [], i)} />
                         ))}
                       </div>
                     )}
@@ -484,25 +501,62 @@ export default function CommentsSection({ recipeId }: Props) {
         </div>
       </div>
       {/* Image lightbox */}
-      {lightboxUrl && (
+      {lightbox && (
         <div
           className="fixed inset-0 z-[80] flex items-center justify-center bg-black/90 p-4"
-          onClick={() => setLightboxUrl(null)}
+          onClick={closeLightbox}
         >
           <button
-            onClick={() => setLightboxUrl(null)}
+            onClick={closeLightbox}
             aria-label="Close"
             className="absolute top-4 right-4 w-10 h-10 bg-white/20 hover:bg-white/30 rounded-full flex items-center justify-center text-white transition-colors text-lg"
           >
             ✕
           </button>
+
+          {lightbox.urls.length > 1 && (
+            <button
+              onClick={(e) => { e.stopPropagation(); lightboxPrev(); }}
+              aria-label="Previous image"
+              className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/20 hover:bg-white/35 rounded-full flex items-center justify-center text-white transition-colors"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+              </svg>
+            </button>
+          )}
+
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
-            src={lightboxUrl}
+            src={lightbox.urls[lightbox.index]}
             alt="Full size"
             className="max-w-full max-h-[90vh] object-contain rounded-2xl"
             onClick={(e) => e.stopPropagation()}
           />
+
+          {lightbox.urls.length > 1 && (
+            <button
+              onClick={(e) => { e.stopPropagation(); lightboxNext(); }}
+              aria-label="Next image"
+              className="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/20 hover:bg-white/35 rounded-full flex items-center justify-center text-white transition-colors"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+              </svg>
+            </button>
+          )}
+
+          {lightbox.urls.length > 1 && (
+            <div className="absolute bottom-5 flex gap-2">
+              {lightbox.urls.map((_, i) => (
+                <button
+                  key={i}
+                  onClick={(e) => { e.stopPropagation(); setLightbox((lb) => lb ? { ...lb, index: i } : lb); }}
+                  className={`w-2 h-2 rounded-full transition-colors ${i === lightbox.index ? "bg-white" : "bg-white/40 hover:bg-white/60"}`}
+                />
+              ))}
+            </div>
+          )}
         </div>
       )}
     </div>
