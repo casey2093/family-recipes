@@ -692,20 +692,39 @@ export default function AddRecipeModal({ defaultCategory, editRecipe, onClose }:
                 <label className="block text-sm font-bold text-recipe-navy mb-2">
                   Photo of the dish <span className="font-normal text-gray-400">(optional)</span>
                 </label>
-                <div
-                  className="border-2 border-dashed border-gray-200 rounded-xl p-4 text-center cursor-pointer hover:border-recipe-pink hover:bg-recipe-rose/10 transition-all"
-                  onClick={() => dishImageInputRef.current?.click()}
-                >
-                  {dishImagePreview ? (
-                    <div className="space-y-2">
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img src={dishImagePreview} alt="Dish preview" className="max-h-40 mx-auto rounded-lg object-contain" />
-                      <p className="text-xs text-gray-500">Click to change</p>
-                    </div>
-                  ) : (
+                {(dishImagePreview || form.imageUrl) ? (
+                  <div className="relative rounded-xl overflow-hidden border border-gray-200">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={dishImagePreview ?? form.imageUrl}
+                      alt="Dish preview"
+                      className="w-full max-h-48 object-cover cursor-pointer hover:opacity-90 transition-opacity"
+                      onClick={() => dishImageInputRef.current?.click()}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => { setDishImageFile(null); setDishImagePreview(null); setField("imageUrl", ""); }}
+                      className="absolute top-2 right-2 w-7 h-7 bg-black/50 hover:bg-black/70 rounded-full flex items-center justify-center text-white text-xs transition-colors"
+                      aria-label="Remove photo"
+                    >
+                      ✕
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => dishImageInputRef.current?.click()}
+                      className="absolute bottom-2 right-2 bg-black/50 hover:bg-black/70 text-white text-xs font-semibold px-2.5 py-1 rounded-full transition-colors"
+                    >
+                      Change
+                    </button>
+                  </div>
+                ) : (
+                  <div
+                    className="border-2 border-dashed border-gray-200 rounded-xl p-4 text-center cursor-pointer hover:border-recipe-pink hover:bg-recipe-rose/10 transition-all"
+                    onClick={() => dishImageInputRef.current?.click()}
+                  >
                     <p className="text-sm text-gray-400">Add a photo of the finished dish</p>
-                  )}
-                </div>
+                  </div>
+                )}
                 <input ref={dishImageInputRef} type="file" accept="image/*" className="hidden" onChange={handleDishImageChange} />
               </div>
 
