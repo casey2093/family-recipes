@@ -11,7 +11,10 @@ export async function GET() {
   const authors = await readAuthors();
   // Never expose password hashes to the client
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  return NextResponse.json(authors.map(({ passwordHash: _ph, ...safe }) => safe));
+  const data = authors.map(({ passwordHash: _ph, ...safe }) => safe);
+  return NextResponse.json(data, {
+    headers: { "Cache-Control": "no-store" },
+  });
 }
 
 export async function POST(request: Request) {

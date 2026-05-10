@@ -110,10 +110,10 @@ export const CATEGORIES: Category[] = [
     gradient: "from-cyan-50 to-sky-100",
     accentColor: "#0EA5E9",
     subcategories: [
+      { id: "smoothies-juices", name: "Smoothies & Juices" },
+      { id: "hot-drinks", name: "Hot Drinks" },
       { id: "cocktails", name: "Cocktails" },
       { id: "shots", name: "Shots" },
-      { id: "hot-drinks", name: "Hot Drinks" },
-      { id: "smoothies-juices", name: "Smoothies & Juices" },
       { id: "other", name: "Other" },
     ],
   },

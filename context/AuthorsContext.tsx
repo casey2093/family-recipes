@@ -24,7 +24,7 @@ export function AuthorsProvider({ children }: { children: ReactNode }) {
   const [authorsMap, setAuthorsMap] = useState<AuthorsMap>({});
 
   const fetchAuthors = useCallback(() => {
-    fetch("/api/authors")
+    fetch("/api/authors", { cache: "no-store" })
       .then((r) => r.json())
       .then((authors: Omit<Author, "passwordHash">[]) => {
         const map: AuthorsMap = {};
@@ -34,7 +34,13 @@ export function AuthorsProvider({ children }: { children: ReactNode }) {
       .catch(() => {});
   }, []);
 
-  useEffect(() => { fetchAuthors(); }, [fetchAuthors]);
+  useEffect(() => {
+    fetchAuthors();
+    // Re-fetch whenever the tab becomes visible so profile photos stay current
+    const onVisible = () => { if (document.visibilityState === "visible") fetchAuthors(); };
+    document.addEventListener("visibilitychange", onVisible);
+    return () => document.removeEventListener("visibilitychange", onVisible);
+  }, [fetchAuthors]);
 
   return (
     <AuthorsContext.Provider value={{ authorsMap, refreshAuthors: fetchAuthors }}>
