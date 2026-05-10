@@ -116,7 +116,7 @@ export default function HomePage() {
           style={{
             height: "42%",
             background:
-              "linear-gradient(to bottom, rgba(255,255,255,0.99) 0%, rgba(240,249,255,0.97) 35%, rgba(240,249,255,0.75) 65%, transparent 100%)",
+              "linear-gradient(to bottom, #f0f9ff 0%, rgba(240,249,255,0.97) 55%, rgba(240,249,255,0.75) 75%, transparent 100%)",
           }}
         >
           <h1
