@@ -4,6 +4,7 @@ import "./globals.css";
 import Navigation from "@/components/Navigation";
 import { ModalProvider } from "@/context/ModalContext";
 import { AuthProvider } from "@/context/AuthContext";
+import { AuthorsProvider } from "@/context/AuthorsContext";
 
 const playfair = Playfair_Display({
   subsets: ["latin"],
@@ -27,10 +28,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en">
       <body className={`${playfair.variable} ${nunito.variable} antialiased`}>
         <AuthProvider>
-          <ModalProvider>
-            <Navigation />
-            <main className="min-h-screen pt-16">{children}</main>
-          </ModalProvider>
+          <AuthorsProvider>
+            <ModalProvider>
+              <Navigation />
+              <main className="min-h-screen pt-16">{children}</main>
+            </ModalProvider>
+          </AuthorsProvider>
         </AuthProvider>
       </body>
     </html>

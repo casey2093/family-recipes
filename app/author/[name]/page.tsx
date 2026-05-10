@@ -6,6 +6,7 @@ import Link from "next/link";
 import { Recipe, Author } from "@/lib/types";
 import { CATEGORIES } from "@/lib/categories";
 import { useModal } from "@/context/ModalContext";
+import { useAuth } from "@/context/AuthContext";
 import { uploadImage } from "@/lib/clientUpload";
 import RecipeCardPreview from "@/components/RecipeCardPreview";
 import RecipeViewModal from "@/components/RecipeViewModal";
@@ -14,6 +15,8 @@ export default function AuthorPage() {
   const params = useParams();
   const name = decodeURIComponent(params.name as string);
   const { openAddModal } = useModal();
+  const { user } = useAuth();
+  const isOwnProfile = user?.name.toLowerCase() === name.toLowerCase();
 
   const [author, setAuthor] = useState<Author | null>(null);
   const [recipes, setRecipes] = useState<Recipe[]>([]);
@@ -178,15 +181,17 @@ export default function AuthorPage() {
                     <p className="text-gray-500">
                       {recipes.length} {recipes.length === 1 ? "recipe" : "recipes"} shared
                     </p>
-                    <button
-                      onClick={startEditing}
-                      className="text-xs text-recipe-pink font-semibold hover:underline flex items-center gap-1"
-                    >
-                      <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                      </svg>
-                      Edit Profile
-                    </button>
+                    {isOwnProfile && (
+                      <button
+                        onClick={startEditing}
+                        className="text-xs text-recipe-pink font-semibold hover:underline flex items-center gap-1"
+                      >
+                        <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                        </svg>
+                        Edit Profile
+                      </button>
+                    )}
                   </div>
                 </>
               )}
