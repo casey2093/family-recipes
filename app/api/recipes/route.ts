@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { v4 as uuidv4 } from "uuid";
-import { Recipe } from "@/lib/types";
+import { Comment, Recipe } from "@/lib/types";
 import { kvGet, kvSet } from "@/lib/kv";
 import type { StatsRecord } from "@/app/api/stats/route";
 
@@ -64,7 +64,11 @@ export async function GET(request: Request) {
   // Fetch real comment counts in parallel — source of truth regardless of when comments were added
   const commentEntries = await Promise.all(
     filtered.map((r) =>
-      kvGet<unknown[]>(`comments:${r.id}`).then((c) => [r.id, c?.length ?? 0] as const)
+      kvGet<Comment[]>(`comments:${r.id}`).then((c) => {
+        if (!c) return [r.id, 0] as const;
+        const total = c.reduce((sum, comment) => sum + 1 + (comment.replies?.length ?? 0), 0);
+        return [r.id, total] as const;
+      })
     )
   );
   const commentCountMap = Object.fromEntries(commentEntries);

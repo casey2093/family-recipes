@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Playfair_Display, Nunito } from "next/font/google";
 import "./globals.css";
 import Navigation from "@/components/Navigation";
@@ -17,6 +17,11 @@ const nunito = Nunito({
   variable: "--font-nunito",
   display: "swap",
 });
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+};
 
 export const metadata: Metadata = {
   title: "Ware Family Kitchen",
