@@ -245,7 +245,7 @@ export default function AddRecipeModal({ defaultCategory, editRecipe, onClose }:
 
       const payload = {
         ...form,
-        imageUrl: imageUrl || undefined,
+        imageUrl: imageUrl,
         ingredients: form.ingredients.filter((s) => s.trim()),
         instructions: form.instructions.filter((s) => s.trim()),
         ...(isEditing ? { id: editRecipe!.id } : {}),
