@@ -93,7 +93,15 @@ export default function RecipeCardFull({ recipe, showMeta = true }: Props) {
   const totalTime = recipe.prepTime + recipe.cookTime;
 
   const [adjServings, setAdjServings] = useState(recipe.servings || 1);
+  const [lightboxOpen, setLightboxOpen] = useState(false);
   useEffect(() => { setAdjServings(recipe.servings || 1); }, [recipe.id, recipe.servings]);
+
+  useEffect(() => {
+    if (!lightboxOpen) return;
+    const handler = (e: KeyboardEvent) => { if (e.key === "Escape") setLightboxOpen(false); };
+    document.addEventListener("keydown", handler);
+    return () => document.removeEventListener("keydown", handler);
+  }, [lightboxOpen]);
 
   const scaleFactor = recipe.servings > 0 ? adjServings / recipe.servings : 1;
   const isScaled = Math.abs(scaleFactor - 1) > 0.001;
@@ -133,7 +141,31 @@ export default function RecipeCardFull({ recipe, showMeta = true }: Props) {
           <img
             src={recipe.imageUrl}
             alt={recipe.title}
-            className="w-full rounded-xl object-cover max-h-72"
+            className="w-full rounded-xl object-cover max-h-72 cursor-pointer hover:opacity-90 transition-opacity"
+            onClick={() => setLightboxOpen(true)}
+          />
+        </div>
+      )}
+
+      {/* Image lightbox */}
+      {lightboxOpen && recipe.imageUrl && (
+        <div
+          className="fixed inset-0 z-[80] flex items-center justify-center bg-black/90 p-4"
+          onClick={() => setLightboxOpen(false)}
+        >
+          <button
+            onClick={() => setLightboxOpen(false)}
+            aria-label="Close"
+            className="absolute top-4 right-4 w-10 h-10 bg-white/20 hover:bg-white/30 rounded-full flex items-center justify-center text-white transition-colors text-lg"
+          >
+            ✕
+          </button>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={recipe.imageUrl}
+            alt={recipe.title}
+            className="max-w-full max-h-[90vh] object-contain rounded-2xl"
+            onClick={(e) => e.stopPropagation()}
           />
         </div>
       )}
