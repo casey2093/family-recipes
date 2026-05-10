@@ -61,11 +61,19 @@ export async function GET(request: Request) {
     (a, b) => new Date(b.uploadedAt).getTime() - new Date(a.uploadedAt).getTime()
   );
 
+  // Fetch real comment counts in parallel — source of truth regardless of when comments were added
+  const commentEntries = await Promise.all(
+    filtered.map((r) =>
+      kvGet<unknown[]>(`comments:${r.id}`).then((c) => [r.id, c?.length ?? 0] as const)
+    )
+  );
+  const commentCountMap = Object.fromEntries(commentEntries);
+
   const withStats = filtered.map((r) => ({
     ...r,
     saves: stats[r.id]?.saves ?? 0,
     completions: stats[r.id]?.completions ?? 0,
-    comments: stats[r.id]?.comments ?? 0,
+    comments: commentCountMap[r.id] ?? 0,
   }));
 
   return NextResponse.json(withStats);

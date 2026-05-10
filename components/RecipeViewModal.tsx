@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { Recipe } from "@/lib/types";
-import { getCategoryById } from "@/lib/categories";
+import { getCategoryById, getSubcategoryName } from "@/lib/categories";
 import { useModal } from "@/context/ModalContext";
 import { useAuth } from "@/context/AuthContext";
 import RecipeCardFull from "./RecipeCardFull";
@@ -16,6 +16,7 @@ interface Props {
 
 export default function RecipeViewModal({ recipe, onClose, onDelete }: Props) {
   const category = getCategoryById(recipe.category);
+  const subcategoryName = getSubcategoryName(recipe.category, recipe.subcategory);
   const { openEditModal } = useModal();
   const { user } = useAuth();
   const [isFavorite, setIsFavorite] = useState(false);
@@ -95,8 +96,9 @@ export default function RecipeViewModal({ recipe, onClose, onDelete }: Props) {
           style={{ backgroundColor: `${category?.accentColor ?? "#E8608A"}12` }}
         >
           <span className="text-xl flex-shrink-0">{category?.emoji ?? "🍴"}</span>
-          <h2 className="font-playfair font-bold text-recipe-navy text-base sm:text-lg leading-tight flex-1 min-w-0 truncate">
-            {recipe.title}
+          <h2 className="font-semibold text-recipe-navy text-sm sm:text-base leading-tight flex-1 min-w-0 truncate">
+            {category?.name ?? recipe.category}
+            {subcategoryName && <span className="text-gray-500 font-normal"> — {subcategoryName}</span>}
           </h2>
 
           {/* Mark as completed */}
