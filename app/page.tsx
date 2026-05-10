@@ -29,38 +29,60 @@ export default function HomePage() {
     <>
       {/* Hero — sticky so content scrolls up over it */}
       <section
-        className="sticky top-16 overflow-hidden flex flex-col"
+        className="sticky top-16 overflow-hidden"
         style={{ height: "calc(100vh - 64px)", zIndex: 0 }}
       >
-        {/* ── Sky-blue text panel ── */}
-        {/* Separate from the photo so text is never over faces */}
-        <div
-          className="relative flex-shrink-0 flex flex-col items-center justify-center px-6 text-center"
-          style={{
-            height: "38%",
-            background: "linear-gradient(135deg, #ffffff 0%, #f0f9ff 50%, #eff6ff 100%)",
-          }}
-        >
-          {/* Soft fade at the bottom of the blue panel into the photo */}
+        {/* Photo — starts behind the button row so the tree-line appears right below text */}
+        <div className="absolute inset-x-0 bottom-0" style={{ top: "18%" }}>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/family-hero.jpg"
+            alt="The Ware Family"
+            className="w-full h-full object-cover"
+            style={{ objectPosition: "center 12%" }}
+          />
+
+          {/* Top fade — sky-blue washing over the tree tops, blending with the text panel */}
           <div
-            className="absolute bottom-0 inset-x-0 pointer-events-none"
+            className="absolute top-0 inset-x-0 pointer-events-none"
             style={{
-              height: "60%",
-              background: "linear-gradient(to bottom, transparent 0%, rgba(240,249,255,0.85) 100%)",
+              height: "40%",
+              background:
+                "linear-gradient(to bottom, #f0f9ff 0%, rgba(240,249,255,0.88) 25%, rgba(240,249,255,0.4) 60%, transparent 100%)",
             }}
           />
 
+          {/* Bottom fade — fades to navy, flows into the stats bar */}
+          <div
+            className="absolute bottom-0 inset-x-0 pointer-events-none"
+            style={{
+              height: "18%",
+              background: "linear-gradient(to top, rgba(27,58,92,1) 0%, transparent 100%)",
+            }}
+          />
+        </div>
+
+        {/* Sky-blue text panel — layered on top of the photo */}
+        {/* Gradient fades out toward the bottom so photo shows through behind buttons */}
+        <div
+          className="absolute inset-x-0 top-0 z-10 flex flex-col items-center justify-center px-6 text-center"
+          style={{
+            height: "34%",
+            background:
+              "linear-gradient(to bottom, rgba(255,255,255,0.99) 0%, rgba(240,249,255,0.97) 35%, rgba(240,249,255,0.75) 65%, transparent 100%)",
+          }}
+        >
           <h1
-            className="relative font-playfair font-bold text-recipe-navy leading-tight mb-3"
+            className="font-playfair font-bold text-recipe-navy leading-tight mb-2"
             style={{ fontSize: "clamp(2.2rem, 5.5vw, 4.2rem)" }}
           >
             Ware Family<br />
             <span className="text-recipe-pink">Kitchen</span>
           </h1>
-          <p className="relative text-gray-600 text-base sm:text-lg max-w-xl mx-auto mb-6 leading-relaxed">
+          <p className="text-gray-600 text-base sm:text-lg max-w-xl mx-auto mb-5 leading-relaxed">
             The best recipes from every corner of the family&nbsp;—&nbsp;lovingly collected right here.
           </p>
-          <div className="relative flex flex-col sm:flex-row gap-3 justify-center">
+          <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <button
               onClick={() => openAddModal()}
               className="inline-flex items-center gap-2 bg-recipe-pink text-white px-7 py-3 rounded-full font-bold text-sm sm:text-base hover:bg-opacity-90 shadow-md hover:shadow-lg transition-all"
@@ -69,45 +91,15 @@ export default function HomePage() {
             </button>
             <a
               href="#categories"
-              className="inline-flex items-center gap-2 bg-white text-recipe-navy px-7 py-3 rounded-full font-bold text-sm sm:text-base hover:bg-recipe-cream border border-recipe-navy/15 shadow-sm transition-all"
+              className="inline-flex items-center gap-2 bg-white/70 backdrop-blur-sm text-recipe-navy px-7 py-3 rounded-full font-bold text-sm sm:text-base hover:bg-white/90 border border-recipe-navy/15 shadow-sm transition-all"
             >
               Browse Recipes ↓
             </a>
           </div>
         </div>
-
-        {/* ── Photo panel ── */}
-        <div className="relative flex-1 overflow-hidden">
-          {/* Sky-blue fade at top blends blue panel into photo */}
-          <div
-            className="absolute top-0 inset-x-0 z-10 pointer-events-none"
-            style={{
-              height: "28%",
-              background: "linear-gradient(to bottom, #f0f9ff 0%, transparent 100%)",
-            }}
-          />
-
-          {/* Family photo — object-top so we see the tops of heads first */}
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src="/family-hero.jpg"
-            alt="The Ware Family"
-            className="w-full h-full object-cover object-top"
-          />
-
-          {/* Navy fade at bottom — flows into stats bar as content scrolls over */}
-          <div
-            className="absolute bottom-0 inset-x-0 pointer-events-none"
-            style={{
-              height: "22%",
-              background: "linear-gradient(to top, rgba(27,58,92,1) 0%, transparent 100%)",
-            }}
-          />
-        </div>
       </section>
 
       {/* Scrollable content — slides up over the sticky hero */}
-      {/* No bg set here so it inherits bg-recipe-cream from the body */}
       <div id="categories" className="relative scroll-mt-16" style={{ zIndex: 10 }}>
 
         {/* Stats banner */}
@@ -133,42 +125,44 @@ export default function HomePage() {
         </div>
 
         {/* Categories grid */}
-        <section className="max-w-6xl mx-auto px-4 sm:px-6 py-14">
-          <div className="text-center mb-10">
-            <h2 className="font-playfair font-bold text-recipe-navy text-3xl sm:text-4xl mb-2">
-              Browse by Category
-            </h2>
-            <p className="text-gray-500">What are you in the mood for?</p>
-          </div>
+        <section className="bg-recipe-cream max-w-6xl mx-auto px-4 sm:px-6 py-14" style={{ maxWidth: "100%" }}>
+          <div className="max-w-6xl mx-auto">
+            <div className="text-center mb-10">
+              <h2 className="font-playfair font-bold text-recipe-navy text-3xl sm:text-4xl mb-2">
+                Browse by Category
+              </h2>
+              <p className="text-gray-500">What are you in the mood for?</p>
+            </div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-            {CATEGORIES.map((cat) => {
-              const count = countByCategory(cat.id);
-              return (
-                <Link
-                  key={cat.id}
-                  href={`/${cat.id}`}
-                  className={`group relative bg-gradient-to-br ${cat.gradient} rounded-2xl p-5 text-center shadow-sm border border-gray-200 hover:shadow-card-hover hover:-translate-y-1 transition-all duration-200 overflow-hidden`}
-                >
-                  <h3 className="font-playfair font-bold text-recipe-navy text-base sm:text-lg mb-1">
-                    {cat.name}
-                  </h3>
-                  <p className="text-xs text-gray-500 mb-2">{cat.description}</p>
-                  <span
-                    className="inline-block text-xs font-bold px-2.5 py-1 rounded-full"
-                    style={{
-                      backgroundColor: `${cat.accentColor}20`,
-                      color: cat.accentColor,
-                    }}
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+              {CATEGORIES.map((cat) => {
+                const count = countByCategory(cat.id);
+                return (
+                  <Link
+                    key={cat.id}
+                    href={`/${cat.id}`}
+                    className={`group relative bg-gradient-to-br ${cat.gradient} rounded-2xl p-5 text-center shadow-sm border border-gray-200 hover:shadow-card-hover hover:-translate-y-1 transition-all duration-200 overflow-hidden`}
                   >
-                    {count === 0 ? "Be the first!" : `${count} ${count === 1 ? "recipe" : "recipes"}`}
-                  </span>
-                  <div className="absolute bottom-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <span style={{ color: cat.accentColor }} className="text-sm font-bold">→</span>
-                  </div>
-                </Link>
-              );
-            })}
+                    <h3 className="font-playfair font-bold text-recipe-navy text-base sm:text-lg mb-1">
+                      {cat.name}
+                    </h3>
+                    <p className="text-xs text-gray-500 mb-2">{cat.description}</p>
+                    <span
+                      className="inline-block text-xs font-bold px-2.5 py-1 rounded-full"
+                      style={{
+                        backgroundColor: `${cat.accentColor}20`,
+                        color: cat.accentColor,
+                      }}
+                    >
+                      {count === 0 ? "Be the first!" : `${count} ${count === 1 ? "recipe" : "recipes"}`}
+                    </span>
+                    <div className="absolute bottom-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <span style={{ color: cat.accentColor }} className="text-sm font-bold">→</span>
+                    </div>
+                  </Link>
+                );
+              })}
+            </div>
           </div>
         </section>
 
