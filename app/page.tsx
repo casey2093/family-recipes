@@ -112,9 +112,9 @@ export default function HomePage() {
 
         {/* Sky-blue text panel */}
         <div
-          className="absolute inset-x-0 top-0 z-10 flex flex-col items-center justify-center px-6 text-center pt-6"
+          className="absolute inset-x-0 top-0 z-10 flex flex-col items-center justify-start px-6 text-center pt-8"
           style={{
-            height: "34%",
+            height: "42%",
             background:
               "linear-gradient(to bottom, rgba(255,255,255,0.99) 0%, rgba(240,249,255,0.97) 35%, rgba(240,249,255,0.75) 65%, transparent 100%)",
           }}
