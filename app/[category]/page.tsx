@@ -8,6 +8,7 @@ import { getCategoryById } from "@/lib/categories";
 import { useModal } from "@/context/ModalContext";
 import RecipeCardPreview from "@/components/RecipeCardPreview";
 import RecipeViewModal from "@/components/RecipeViewModal";
+import FilterDropdown from "@/components/FilterDropdown";
 
 function formatDate(isoString: string): string {
   return new Intl.DateTimeFormat("en-US", {
@@ -254,18 +255,18 @@ export default function CategoryPage() {
             </div>
 
             {/* Sort dropdown */}
-            <div className="flex items-center gap-2 flex-shrink-0">
-              <span className="text-xs font-semibold text-gray-400">Sort:</span>
-              <select
+            <div className="flex-shrink-0">
+              <FilterDropdown
                 value={sortBy}
-                onChange={(e) => setSortBy(e.target.value as typeof sortBy)}
-                className="text-xs font-semibold text-gray-600 border border-gray-200 rounded-lg px-2 py-1.5 bg-white focus:outline-none focus:border-recipe-navy cursor-pointer"
-              >
-                <option value="newest">Newest first</option>
-                <option value="oldest">Oldest first</option>
-                <option value="az">A–Z by title</option>
-                <option value="author">By chef</option>
-              </select>
+                onChange={(v) => setSortBy((v || "newest") as typeof sortBy)}
+                placeholder="Newest first"
+                options={[
+                  { value: "newest", label: "Newest first" },
+                  { value: "oldest", label: "Oldest first" },
+                  { value: "az", label: "A–Z by title" },
+                  { value: "author", label: "By chef" },
+                ]}
+              />
             </div>
           </div>
         )}
