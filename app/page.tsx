@@ -69,7 +69,7 @@ export default function HomePage() {
         </div>
 
         {/* Photo with gradient overlay fading from sky-blue into the image */}
-        <div className="relative" style={{ marginTop: "-5rem" }}>
+        <div className="relative" style={{ marginTop: "-3rem" }}>
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src="/family-hero.jpg"
@@ -79,8 +79,8 @@ export default function HomePage() {
           <div
             className="absolute inset-x-0 top-0 pointer-events-none"
             style={{
-              height: "42%",
-              background: "linear-gradient(to bottom, #eff6ff 0%, rgba(239,246,255,0.75) 40%, transparent 100%)",
+              height: "45%",
+              background: "linear-gradient(to bottom, #eff6ff 0%, #eff6ff 22%, rgba(239,246,255,0.7) 55%, transparent 100%)",
             }}
           />
         </div>
