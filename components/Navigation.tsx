@@ -411,11 +411,28 @@ export default function Navigation() {
             {/* Mobile user info */}
             {user && (
               <div className="flex items-center gap-3 px-5 py-3 bg-recipe-cream border-b border-gray-100">
-                <div className="w-9 h-9 rounded-full bg-recipe-rose flex items-center justify-center text-recipe-pink font-bold">
-                  {user.name.charAt(0).toUpperCase()}
-                </div>
+                <Link href={`/author/${encodeURIComponent(user.name)}`} onClick={() => setMobileOpen(false)}>
+                  {authorsMap[user.name.toLowerCase()]?.imageUrl ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={authorsMap[user.name.toLowerCase()].imageUrl}
+                      alt={user.name}
+                      className="w-9 h-9 rounded-full object-cover flex-shrink-0"
+                    />
+                  ) : (
+                    <div className="w-9 h-9 rounded-full bg-recipe-rose flex items-center justify-center text-recipe-pink font-bold flex-shrink-0">
+                      {user.name.charAt(0).toUpperCase()}
+                    </div>
+                  )}
+                </Link>
                 <div className="flex-1 min-w-0">
-                  <p className="font-semibold text-recipe-navy text-sm truncate">{user.name}</p>
+                  <Link
+                    href={`/author/${encodeURIComponent(user.name)}`}
+                    onClick={() => setMobileOpen(false)}
+                    className="font-semibold text-recipe-navy text-sm truncate block hover:text-recipe-pink"
+                  >
+                    {user.name}
+                  </Link>
                   <button
                     onClick={() => { logout(); setMobileOpen(false); }}
                     className="text-xs text-gray-400 hover:text-recipe-pink"
