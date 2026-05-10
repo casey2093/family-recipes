@@ -2,6 +2,9 @@ import { NextResponse } from "next/server";
 import { v4 as uuidv4 } from "uuid";
 import { Recipe } from "@/lib/types";
 import { kvGet, kvSet } from "@/lib/kv";
+import type { StatsRecord } from "@/app/api/stats/route";
+
+type StatsMap = Record<string, StatsRecord>;
 
 async function readRecipes(): Promise<Recipe[]> {
   const remote = await kvGet<Recipe[]>("recipes");
@@ -46,7 +49,11 @@ export async function GET(request: Request) {
   const category = searchParams.get("category");
   const uploadedBy = searchParams.get("uploadedBy");
 
-  const recipes = await readRecipes();
+  const [recipes, stats] = await Promise.all([
+    readRecipes(),
+    kvGet<StatsMap>("recipe_stats").then((s) => s ?? {}),
+  ]);
+
   let filtered = category ? recipes.filter((r) => r.category === category) : recipes;
   if (uploadedBy) filtered = filtered.filter((r) => r.uploadedBy === uploadedBy);
 
@@ -54,7 +61,14 @@ export async function GET(request: Request) {
     (a, b) => new Date(b.uploadedAt).getTime() - new Date(a.uploadedAt).getTime()
   );
 
-  return NextResponse.json(filtered);
+  const withStats = filtered.map((r) => ({
+    ...r,
+    saves: stats[r.id]?.saves ?? 0,
+    completions: stats[r.id]?.completions ?? 0,
+    comments: stats[r.id]?.comments ?? 0,
+  }));
+
+  return NextResponse.json(withStats);
 }
 
 export async function POST(request: Request) {

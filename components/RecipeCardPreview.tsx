@@ -27,6 +27,8 @@ export default function RecipeCardPreview({ recipe, onClick }: Props) {
   const totalTime = recipe.prepTime + recipe.cookTime;
   const [isFavorite, setIsFavorite] = useState(false);
   const [isCompleted, setIsCompleted] = useState(false);
+  const [displaySaves, setDisplaySaves] = useState(recipe.saves ?? 0);
+  const [displayCompletions, setDisplayCompletions] = useState(recipe.completions ?? 0);
 
   useEffect(() => {
     const favIds: string[] = JSON.parse(localStorage.getItem("wfk_favorites") ?? "[]");
@@ -35,21 +37,41 @@ export default function RecipeCardPreview({ recipe, onClick }: Props) {
     setIsCompleted(doneIds.includes(recipe.id));
   }, [recipe.id]);
 
+  // Keep display counts in sync if parent re-fetches recipes with updated stats
+  useEffect(() => { setDisplaySaves(recipe.saves ?? 0); }, [recipe.saves]);
+  useEffect(() => { setDisplayCompletions(recipe.completions ?? 0); }, [recipe.completions]);
+
   const toggleFavorite = (e: React.MouseEvent) => {
     e.stopPropagation();
     const ids: string[] = JSON.parse(localStorage.getItem("wfk_favorites") ?? "[]");
-    const newIds = isFavorite ? ids.filter((id) => id !== recipe.id) : [...ids, recipe.id];
+    const wasFav = ids.includes(recipe.id);
+    const newIds = wasFav ? ids.filter((id) => id !== recipe.id) : [...ids, recipe.id];
     localStorage.setItem("wfk_favorites", JSON.stringify(newIds));
-    setIsFavorite(!isFavorite);
+    setIsFavorite(!wasFav);
+    setDisplaySaves((prev) => (wasFav ? Math.max(0, prev - 1) : prev + 1));
+    fetch("/api/stats", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ recipeId: recipe.id, action: wasFav ? "unsave" : "save" }),
+    }).catch(console.error);
   };
 
   const toggleCompleted = (e: React.MouseEvent) => {
     e.stopPropagation();
     const ids: string[] = JSON.parse(localStorage.getItem("wfk_completed") ?? "[]");
-    const newIds = isCompleted ? ids.filter((id) => id !== recipe.id) : [...ids, recipe.id];
+    const wasDone = ids.includes(recipe.id);
+    const newIds = wasDone ? ids.filter((id) => id !== recipe.id) : [...ids, recipe.id];
     localStorage.setItem("wfk_completed", JSON.stringify(newIds));
-    setIsCompleted(!isCompleted);
+    setIsCompleted(!wasDone);
+    setDisplayCompletions((prev) => (wasDone ? Math.max(0, prev - 1) : prev + 1));
+    fetch("/api/stats", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ recipeId: recipe.id, action: wasDone ? "uncomplete" : "complete" }),
+    }).catch(console.error);
   };
+
+  const commentCount = recipe.comments ?? 0;
 
   return (
     <div className="relative group hover:-translate-y-1 transition-all duration-200">
@@ -90,8 +112,8 @@ export default function RecipeCardPreview({ recipe, onClick }: Props) {
             {recipe.title}
           </h3>
 
-          {/* Stats row */}
-          <div className="flex items-center gap-3 text-xs text-gray-500 mb-4">
+          {/* Time + servings row */}
+          <div className="flex items-center gap-3 text-xs text-gray-500 mb-2">
             <span className="flex items-center gap-1">
               <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -103,6 +125,24 @@ export default function RecipeCardPreview({ recipe, onClick }: Props) {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
               </svg>
               {recipe.servings > 0 ? `Serves ${recipe.servings}` : "—"}
+            </span>
+          </div>
+
+          {/* Popularity row */}
+          <div className="flex items-center gap-3 text-xs text-gray-400 mb-3">
+            <span className="flex items-center gap-1" title="Saves">
+              <span style={{ color: displaySaves > 0 ? "#E8608A" : undefined }}>★</span>
+              {displaySaves}
+            </span>
+            <span className="flex items-center gap-1" title="Comments">
+              <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+              </svg>
+              {commentCount}
+            </span>
+            <span className="flex items-center gap-1" title="Made it">
+              <span style={{ color: displayCompletions > 0 ? "#1B3A5C" : undefined }}>✓</span>
+              {displayCompletions}
             </span>
           </div>
 

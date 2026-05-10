@@ -12,6 +12,10 @@ export interface Recipe {
   imageUrl?: string;
   uploadedBy: string;
   uploadedAt: string;
+  // Popularity counts (merged from recipe_stats KV key)
+  saves?: number;
+  completions?: number;
+  comments?: number;
 }
 
 export interface RecipeFormData {
@@ -32,7 +36,7 @@ export const emptyFormData: RecipeFormData = {
   title: "",
   category: "",
   subcategory: "",
-  ingredients: [""],
+  ingredients: ["", ""],
   instructions: ["", ""],
   prepTime: "",
   cookTime: "",

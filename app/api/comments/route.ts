@@ -2,6 +2,17 @@ import { NextResponse } from "next/server";
 import { v4 as uuidv4 } from "uuid";
 import { Comment, Reply } from "@/lib/types";
 import { kvGet, kvSet } from "@/lib/kv";
+import type { StatsRecord } from "@/app/api/stats/route";
+
+type StatsMap = Record<string, StatsRecord>;
+
+async function syncCommentCount(recipeId: string, count: number) {
+  const stats: StatsMap = (await kvGet<StatsMap>("recipe_stats")) ?? {};
+  const current = stats[recipeId] ?? { saves: 0, completions: 0, comments: 0 };
+  current.comments = Math.max(0, count);
+  stats[recipeId] = current;
+  await kvSet("recipe_stats", stats);
+}
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
@@ -76,7 +87,9 @@ export async function POST(request: Request) {
     };
 
     const comments = (await kvGet<Comment[]>(`comments:${recipeId}`)) ?? [];
-    await kvSet(`comments:${recipeId}`, [...comments, comment]);
+    const updated = [...comments, comment];
+    await kvSet(`comments:${recipeId}`, updated);
+    await syncCommentCount(recipeId, updated.length);
     return NextResponse.json(comment, { status: 201 });
   } catch (error) {
     console.error("Error with comment:", error);
@@ -93,7 +106,9 @@ export async function DELETE(request: Request) {
       return NextResponse.json({ error: "recipeId and commentId required" }, { status: 400 });
     }
     const comments = (await kvGet<Comment[]>(`comments:${recipeId}`)) ?? [];
-    await kvSet(`comments:${recipeId}`, comments.filter((c) => c.id !== commentId));
+    const remaining = comments.filter((c) => c.id !== commentId);
+    await kvSet(`comments:${recipeId}`, remaining);
+    await syncCommentCount(recipeId, remaining.length);
     return NextResponse.json({ ok: true });
   } catch (error) {
     console.error("Error deleting comment:", error);

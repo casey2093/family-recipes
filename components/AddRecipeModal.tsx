@@ -573,6 +573,7 @@ export default function AddRecipeModal({ defaultCategory, editRecipe, onClose }:
                 <div className="space-y-2">
                   {form.ingredients.map((ing, i) => (
                     <div key={i} className="flex gap-2">
+                      <div className="flex-shrink-0 w-6 h-6 rounded-full bg-recipe-cream flex items-center justify-center text-xs font-bold text-recipe-navy mt-2">{i + 1}</div>
                       <input
                         type="text"
                         value={ing}
@@ -581,7 +582,7 @@ export default function AddRecipeModal({ defaultCategory, editRecipe, onClose }:
                         className="flex-1 border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-recipe-navy"
                       />
                       {form.ingredients.length > 1 && (
-                        <button onClick={() => removeListItem("ingredients", i)} className="px-2 text-gray-400 hover:text-red-400 rounded-lg">✕</button>
+                        <button onClick={() => removeListItem("ingredients", i)} className="px-2 text-gray-400 hover:text-red-400 rounded-lg self-start mt-2">✕</button>
                       )}
                     </div>
                   ))}
