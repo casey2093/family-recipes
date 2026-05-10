@@ -42,6 +42,7 @@ export default function CommentsSection({ recipeId }: Props) {
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [deleteConfirmName, setDeleteConfirmName] = useState("");
   const [deleteError, setDeleteError] = useState("");
+  const [lightboxUrl, setLightboxUrl] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const replyFileInputRef = useRef<HTMLInputElement>(null);
 
@@ -283,7 +284,7 @@ export default function CommentsSection({ recipeId }: Props) {
               <div className={`grid gap-2 mb-2 ${allImages(comment).length > 1 ? "grid-cols-2" : "grid-cols-1 max-w-xs"}`}>
                 {allImages(comment).map((url, i) => (
                   // eslint-disable-next-line @next/next/no-img-element
-                  <img key={i} src={url} alt="Comment image" className="rounded-xl w-full max-h-48 object-cover" />
+                  <img key={i} src={url} alt="Comment image" className="rounded-xl w-full max-h-48 object-cover cursor-pointer hover:opacity-90 transition-opacity" onClick={() => setLightboxUrl(url)} />
                 ))}
               </div>
             )}
@@ -398,7 +399,7 @@ export default function CommentsSection({ recipeId }: Props) {
                       <div className={`grid gap-1.5 mt-1.5 ${reply.imageUrls.length > 1 ? "grid-cols-2" : "grid-cols-1 max-w-[12rem]"}`}>
                         {reply.imageUrls.map((url, i) => (
                           // eslint-disable-next-line @next/next/no-img-element
-                          <img key={i} src={url} alt="Reply image" className="rounded-lg w-full max-h-36 object-cover" />
+                          <img key={i} src={url} alt="Reply image" className="rounded-lg w-full max-h-36 object-cover cursor-pointer hover:opacity-90 transition-opacity" onClick={() => setLightboxUrl(url)} />
                         ))}
                       </div>
                     )}
@@ -482,6 +483,28 @@ export default function CommentsSection({ recipeId }: Props) {
           </button>
         </div>
       </div>
+      {/* Image lightbox */}
+      {lightboxUrl && (
+        <div
+          className="fixed inset-0 z-[80] flex items-center justify-center bg-black/90 p-4"
+          onClick={() => setLightboxUrl(null)}
+        >
+          <button
+            onClick={() => setLightboxUrl(null)}
+            aria-label="Close"
+            className="absolute top-4 right-4 w-10 h-10 bg-white/20 hover:bg-white/30 rounded-full flex items-center justify-center text-white transition-colors text-lg"
+          >
+            ✕
+          </button>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={lightboxUrl}
+            alt="Full size"
+            className="max-w-full max-h-[90vh] object-contain rounded-2xl"
+            onClick={(e) => e.stopPropagation()}
+          />
+        </div>
+      )}
     </div>
   );
 }

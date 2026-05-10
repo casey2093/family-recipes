@@ -5,9 +5,10 @@ import { useState, useEffect } from "react";
 interface Props {
   onClose: () => void;
   onSuccess: (name: string) => void;
+  message?: string;
 }
 
-export default function AuthModal({ onClose, onSuccess }: Props) {
+export default function AuthModal({ onClose, onSuccess, message }: Props) {
   const [tab, setTab] = useState<"login" | "register">("login");
   const [name, setName] = useState("");
   const [password, setPassword] = useState("");
@@ -85,7 +86,7 @@ export default function AuthModal({ onClose, onSuccess }: Props) {
         <div className="px-6 pt-6 pb-4">
           <div className="flex items-center justify-between mb-5">
             <h2 className="font-playfair font-bold text-recipe-navy text-xl">
-              {tab === "login" ? "Welcome back!" : "Join the kitchen"}
+              {message ? (tab === "login" ? "Sign in to continue" : "Join the kitchen") : (tab === "login" ? "Welcome back!" : "Join the kitchen")}
             </h2>
             <button
               onClick={onClose}
@@ -96,6 +97,13 @@ export default function AuthModal({ onClose, onSuccess }: Props) {
               </svg>
             </button>
           </div>
+
+          {/* Contextual prompt message */}
+          {message && (
+            <div className="bg-recipe-cream rounded-xl px-3 py-2.5 mb-4 text-center">
+              <p className="text-sm text-recipe-navy font-medium">{message}</p>
+            </div>
+          )}
 
           {/* Tab switcher */}
           <div className="flex bg-gray-100 rounded-xl p-1 mb-5">

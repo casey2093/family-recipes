@@ -10,7 +10,7 @@ export interface AuthUser {
 interface AuthContextType {
   user: AuthUser | null;
   loading: boolean;
-  openAuthModal: () => void;
+  openAuthModal: (message?: string) => void;
   logout: () => Promise<void>;
   refreshUser: () => Promise<void>;
 }
@@ -18,7 +18,7 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType>({
   user: null,
   loading: true,
-  openAuthModal: () => {},
+  openAuthModal: (_message?: string) => {},
   logout: async () => {},
   refreshUser: async () => {},
 });
@@ -31,6 +31,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [loading, setLoading] = useState(true);
   const [authModalOpen, setAuthModalOpen] = useState(false);
+  const [authModalMessage, setAuthModalMessage] = useState<string>("");
 
   const refreshUser = useCallback(async () => {
     try {
@@ -68,14 +69,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       value={{
         user,
         loading,
-        openAuthModal: () => setAuthModalOpen(true),
+        openAuthModal: (message?: string) => { setAuthModalMessage(message ?? ""); setAuthModalOpen(true); },
         logout,
         refreshUser,
       }}
     >
       {children}
       {authModalOpen && (
-        <AuthModal onClose={() => setAuthModalOpen(false)} onSuccess={handleAuthSuccess} />
+        <AuthModal
+          message={authModalMessage}
+          onClose={() => { setAuthModalOpen(false); setAuthModalMessage(""); }}
+          onSuccess={handleAuthSuccess}
+        />
       )}
     </AuthContext.Provider>
   );

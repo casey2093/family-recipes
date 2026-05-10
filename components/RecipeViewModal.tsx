@@ -41,7 +41,7 @@ export default function RecipeViewModal({ recipe, onClose, onDelete }: Props) {
   }, [user]);
 
   const toggleFavorite = () => {
-    if (!user) { openAuthModal(); return; }
+    if (!user) { openAuthModal("Sign in to save recipes to your profile"); return; }
     const ids: string[] = JSON.parse(localStorage.getItem("wfk_favorites") ?? "[]");
     const newIds = isFavorite ? ids.filter((id) => id !== recipe.id) : [...ids, recipe.id];
     localStorage.setItem("wfk_favorites", JSON.stringify(newIds));
@@ -49,7 +49,7 @@ export default function RecipeViewModal({ recipe, onClose, onDelete }: Props) {
   };
 
   const toggleCompleted = () => {
-    if (!user) { openAuthModal(); return; }
+    if (!user) { openAuthModal("Sign in to track recipes you've made"); return; }
     const ids: string[] = JSON.parse(localStorage.getItem("wfk_completed") ?? "[]");
     const newIds = isCompleted ? ids.filter((id) => id !== recipe.id) : [...ids, recipe.id];
     localStorage.setItem("wfk_completed", JSON.stringify(newIds));
@@ -197,7 +197,7 @@ export default function RecipeViewModal({ recipe, onClose, onDelete }: Props) {
           </div>
         )}
 
-        <div className="flex-1 overflow-y-auto overscroll-contain">
+        <div className="flex-1 overflow-y-auto overscroll-contain pb-4">
           <RecipeCardFull recipe={recipe} showMeta={true} />
           <CommentsSection recipeId={recipe.id} />
         </div>

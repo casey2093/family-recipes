@@ -44,15 +44,37 @@ function formatQuantity(n: number): string {
   if (n <= 0) return "0";
   const whole = Math.floor(n);
   const frac = n - whole;
+  if (frac > 0.96) return String(whole + 1);
+  if (frac < 0.04) return whole > 0 ? String(whole) : "0";
+  // Always snap to the nearest common cooking fraction — no decimals
   const fracs: [number, string][] = [
     [1 / 8, "⅛"], [1 / 4, "¼"], [1 / 3, "⅓"], [3 / 8, "⅜"],
     [1 / 2, "½"], [5 / 8, "⅝"], [2 / 3, "⅔"], [3 / 4, "¾"], [7 / 8, "⅞"],
   ];
+  let bestSym = "½";
+  let bestErr = Infinity;
   for (const [val, sym] of fracs) {
-    if (Math.abs(frac - val) < 0.04) return whole > 0 ? `${whole} ${sym}` : sym;
+    const err = Math.abs(frac - val);
+    if (err < bestErr) { bestErr = err; bestSym = sym; }
   }
-  if (Math.abs(frac) < 0.04) return String(whole);
-  return String(Math.round(n * 10) / 10);
+  return whole > 0 ? `${whole} ${bestSym}` : bestSym;
+}
+
+const unitReplacements: Array<[RegExp, string]> = [
+  [/\btablespoons?\b/gi, "tbsp"],
+  [/\bteaspoons?\b/gi, "tsp"],
+  [/\bounces?\b/gi, "oz"],
+  [/\boz\./gi, "oz"],
+  [/\bpounds?\b/gi, "lb"],
+  [/\blbs?\./gi, "lb"],
+  [/\bmilliliters?\b/gi, "ml"],
+  [/\bmillilitres?\b/gi, "ml"],
+  [/\bliters?\b/gi, "L"],
+  [/\blitres?\b/gi, "L"],
+];
+
+function normalizeUnits(ingredient: string): string {
+  return unitReplacements.reduce((s, [pattern, replacement]) => s.replace(pattern, replacement), ingredient);
 }
 
 function scaleIngredient(ingredient: string, factor: number): string {
@@ -191,7 +213,7 @@ export default function RecipeCardFull({ recipe, showMeta = true }: Props) {
                     className="mt-1.5 w-1.5 h-1.5 rounded-full flex-shrink-0"
                     style={{ backgroundColor: category?.accentColor ?? "#1B3A5C" }}
                   />
-                  {scaleIngredient(ing, scaleFactor)}
+                  {normalizeUnits(scaleIngredient(ing, scaleFactor))}
                 </li>
               ))}
             </ul>

@@ -45,7 +45,7 @@ export default function RecipeCardPreview({ recipe, onClick }: Props) {
 
   const toggleFavorite = (e: React.MouseEvent) => {
     e.stopPropagation();
-    if (!user) { openAuthModal(); return; }
+    if (!user) { openAuthModal("Sign in to save recipes to your profile"); return; }
     const ids: string[] = JSON.parse(localStorage.getItem("wfk_favorites") ?? "[]");
     const wasFav = ids.includes(recipe.id);
     const newIds = wasFav ? ids.filter((id) => id !== recipe.id) : [...ids, recipe.id];
@@ -61,7 +61,7 @@ export default function RecipeCardPreview({ recipe, onClick }: Props) {
 
   const toggleCompleted = (e: React.MouseEvent) => {
     e.stopPropagation();
-    if (!user) { openAuthModal(); return; }
+    if (!user) { openAuthModal("Sign in to track recipes you've made"); return; }
     const ids: string[] = JSON.parse(localStorage.getItem("wfk_completed") ?? "[]");
     const wasDone = ids.includes(recipe.id);
     const newIds = wasDone ? ids.filter((id) => id !== recipe.id) : [...ids, recipe.id];
