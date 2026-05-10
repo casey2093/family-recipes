@@ -275,9 +275,14 @@ export default function CommentsSection({ recipeId }: Props) {
 
             <div className="flex items-center gap-2 mb-2">
               <Link href={`/author/${encodeURIComponent(comment.author)}`}>
-                <div className="w-7 h-7 rounded-full bg-recipe-rose flex items-center justify-center text-recipe-pink text-xs font-bold flex-shrink-0 hover:opacity-80">
-                  {comment.author.charAt(0).toUpperCase()}
-                </div>
+                {authorsMap[comment.author.toLowerCase()]?.imageUrl ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={authorsMap[comment.author.toLowerCase()].imageUrl} alt={comment.author} className="w-7 h-7 rounded-full object-cover flex-shrink-0 hover:opacity-80" />
+                ) : (
+                  <div className="w-7 h-7 rounded-full bg-recipe-rose flex items-center justify-center text-recipe-pink text-xs font-bold flex-shrink-0 hover:opacity-80">
+                    {comment.author.charAt(0).toUpperCase()}
+                  </div>
+                )}
               </Link>
               <Link
                 href={`/author/${encodeURIComponent(comment.author)}`}
@@ -412,6 +417,16 @@ export default function CommentsSection({ recipeId }: Props) {
                 {comment.replies.map((reply) => (
                   <div key={reply.id}>
                     <div className="flex items-center gap-2 mb-0.5">
+                      <Link href={`/author/${encodeURIComponent(reply.author)}`}>
+                        {authorsMap[reply.author.toLowerCase()]?.imageUrl ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img src={authorsMap[reply.author.toLowerCase()].imageUrl} alt={reply.author} className="w-5 h-5 rounded-full object-cover flex-shrink-0 hover:opacity-80" />
+                        ) : (
+                          <div className="w-5 h-5 rounded-full bg-recipe-rose flex items-center justify-center text-recipe-pink text-[10px] font-bold flex-shrink-0 hover:opacity-80">
+                            {reply.author.charAt(0).toUpperCase()}
+                          </div>
+                        )}
+                      </Link>
                       <Link
                         href={`/author/${encodeURIComponent(reply.author)}`}
                         className="font-bold text-recipe-navy text-xs hover:text-recipe-pink"

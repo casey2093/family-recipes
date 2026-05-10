@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Recipe } from "@/lib/types";
 import { getCategoryById, getSubcategoryName } from "@/lib/categories";
+import { useAuthors } from "@/context/AuthorsContext";
 
 interface Props {
   recipe: Recipe;
@@ -90,6 +91,8 @@ function scaleIngredient(ingredient: string, factor: number): string {
 export default function RecipeCardFull({ recipe, showMeta = true }: Props) {
   const category = getCategoryById(recipe.category);
   const subcategoryName = getSubcategoryName(recipe.category, recipe.subcategory);
+  const authorsMap = useAuthors();
+  const authorImageUrl = authorsMap[recipe.uploadedBy.toLowerCase()]?.imageUrl;
   const totalTime = recipe.prepTime + recipe.cookTime;
 
   const [adjServings, setAdjServings] = useState(recipe.servings || 1);
@@ -282,9 +285,14 @@ export default function RecipeCardFull({ recipe, showMeta = true }: Props) {
         <div className="mx-6 mb-6 rounded-xl bg-recipe-cream px-5 py-3 flex flex-wrap items-center justify-between gap-2 text-xs text-gray-500">
           <div className="flex items-center gap-2">
             <Link href={`/author/${encodeURIComponent(recipe.uploadedBy)}`}>
-              <div className="w-6 h-6 rounded-full bg-recipe-rose flex items-center justify-center text-recipe-pink text-xs font-bold hover:opacity-80">
-                {recipe.uploadedBy.charAt(0).toUpperCase()}
-              </div>
+              {authorImageUrl ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={authorImageUrl} alt={recipe.uploadedBy} className="w-6 h-6 rounded-full object-cover hover:opacity-80" />
+              ) : (
+                <div className="w-6 h-6 rounded-full bg-recipe-rose flex items-center justify-center text-recipe-pink text-xs font-bold hover:opacity-80">
+                  {recipe.uploadedBy.charAt(0).toUpperCase()}
+                </div>
+              )}
             </Link>
             <span>
               Added by{" "}
