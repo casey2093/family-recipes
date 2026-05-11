@@ -83,7 +83,7 @@ export default function HomePage() {
           <div
             className="absolute inset-x-0 pointer-events-none"
             style={{
-              top: "-2.5rem",
+              top: "-3.5rem",
               height: "150px",
               background: "linear-gradient(to bottom, #eff6ff 0%, #eff6ff 55%, rgba(239,246,255,0.5) 80%, transparent 100%)",
             }}
