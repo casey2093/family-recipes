@@ -83,9 +83,9 @@ export default function HomePage() {
           <div
             className="absolute inset-x-0 pointer-events-none"
             style={{
-              top: "-4rem",
+              top: "-5rem",
               height: "150px",
-              background: "linear-gradient(to bottom, #eff6ff 0%, #eff6ff 70%, rgba(239,246,255,0.5) 88%, transparent 100%)",
+              background: "linear-gradient(to bottom, #eff6ff 0%, #eff6ff 78%, rgba(239,246,255,0.5) 92%, transparent 100%)",
             }}
           />
         </div>
