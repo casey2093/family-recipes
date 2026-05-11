@@ -85,7 +85,7 @@ export default function HomePage() {
             style={{
               top: "-3.5rem",
               height: "150px",
-              background: "linear-gradient(to bottom, #eff6ff 0%, #eff6ff 55%, rgba(239,246,255,0.5) 80%, transparent 100%)",
+              background: "linear-gradient(to bottom, #eff6ff 0%, #eff6ff 65%, rgba(239,246,255,0.5) 85%, transparent 100%)",
             }}
           />
         </div>
