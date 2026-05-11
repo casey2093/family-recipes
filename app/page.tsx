@@ -77,14 +77,15 @@ export default function HomePage() {
             alt="The Ware Family"
             className="w-full block"
           />
-          {/* Gradient starts above the photo top (top: -2rem) so it begins at the
-              Browse Recipes button level, fading to transparent ~100px into the photo */}
+          {/* Gradient: top:-2.5rem starts it above the photo (hidden behind text section).
+              The solid #eff6ff block covers past the hidden portion so the junction
+              pixel is fully opaque — no harsh line. Then a smooth fade into the photo. */}
           <div
             className="absolute inset-x-0 pointer-events-none"
             style={{
-              top: "-2rem",
+              top: "-2.5rem",
               height: "150px",
-              background: "linear-gradient(to bottom, #eff6ff 0%, rgba(239,246,255,0.9) 35%, rgba(239,246,255,0.5) 65%, transparent 100%)",
+              background: "linear-gradient(to bottom, #eff6ff 0%, #eff6ff 55%, rgba(239,246,255,0.5) 80%, transparent 100%)",
             }}
           />
         </div>
