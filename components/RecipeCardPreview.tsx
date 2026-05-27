@@ -36,9 +36,29 @@ export default function RecipeCardPreview({ recipe, onClick }: Props) {
     setIsFavorite(favIds.includes(recipe.id));
     const doneIds: string[] = JSON.parse(localStorage.getItem("wfk_completed") ?? "[]");
     setIsCompleted(doneIds.includes(recipe.id));
+    // Check localStorage first; if not found, fetch comments to see if user has commented
     const commentedIds: string[] = JSON.parse(localStorage.getItem("wfk_commented") ?? "[]");
-    setIsCommented(commentedIds.includes(recipe.id));
-  }, [recipe.id]);
+    if (commentedIds.includes(recipe.id)) {
+      setIsCommented(true);
+    } else if (user) {
+      fetch(`/api/comments?recipeId=${recipe.id}`)
+        .then((r) => r.json())
+        .then((comments) => {
+          const hasCommented = comments.some(
+            (c: { author: string }) => c.author.toLowerCase() === user.name.toLowerCase()
+          );
+          if (hasCommented) {
+            setIsCommented(true);
+            // Cache it so we don't fetch next time
+            const ids: string[] = JSON.parse(localStorage.getItem("wfk_commented") ?? "[]");
+            if (!ids.includes(recipe.id)) {
+              localStorage.setItem("wfk_commented", JSON.stringify([...ids, recipe.id]));
+            }
+          }
+        })
+        .catch(() => {});
+    }
+  }, [recipe.id, user]);
 
   // Keep display counts in sync if parent re-fetches recipes with updated stats
   useEffect(() => { setDisplaySaves(recipe.saves ?? 0); }, [recipe.saves]);
@@ -142,7 +162,7 @@ export default function RecipeCardPreview({ recipe, onClick }: Props) {
             <span className="flex items-center gap-1" title="Comments">
               <svg
                 className="w-3 h-3"
-                fill={isCommented ? "#E8608A" : "none"}
+                fill="none"
                 stroke={isCommented ? "#E8608A" : "currentColor"}
                 viewBox="0 0 24 24"
               >
