@@ -27,6 +27,7 @@ export default function RecipeCardPreview({ recipe, onClick }: Props) {
   const totalTime = recipe.prepTime + recipe.cookTime;
   const [isFavorite, setIsFavorite] = useState(false);
   const [isCompleted, setIsCompleted] = useState(false);
+  const [isCommented, setIsCommented] = useState(false);
   const [displaySaves, setDisplaySaves] = useState(recipe.saves ?? 0);
   const [displayCompletions, setDisplayCompletions] = useState(recipe.completions ?? 0);
 
@@ -35,6 +36,8 @@ export default function RecipeCardPreview({ recipe, onClick }: Props) {
     setIsFavorite(favIds.includes(recipe.id));
     const doneIds: string[] = JSON.parse(localStorage.getItem("wfk_completed") ?? "[]");
     setIsCompleted(doneIds.includes(recipe.id));
+    const commentedIds: string[] = JSON.parse(localStorage.getItem("wfk_commented") ?? "[]");
+    setIsCommented(commentedIds.includes(recipe.id));
   }, [recipe.id]);
 
   // Keep display counts in sync if parent re-fetches recipes with updated stats
@@ -133,17 +136,22 @@ export default function RecipeCardPreview({ recipe, onClick }: Props) {
           {/* Popularity row */}
           <div className="flex items-center gap-3 text-xs text-gray-400 mb-3">
             <span className="flex items-center gap-1" title="Saves">
-              <span style={{ color: displaySaves > 0 ? "#E8608A" : undefined }}>★</span>
+              <span style={{ color: isFavorite ? "#E8608A" : undefined }}>★</span>
               {displaySaves}
             </span>
             <span className="flex items-center gap-1" title="Comments">
-              <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg
+                className="w-3 h-3"
+                fill={isCommented ? "#E8608A" : "none"}
+                stroke={isCommented ? "#E8608A" : "currentColor"}
+                viewBox="0 0 24 24"
+              >
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
               </svg>
               {commentCount}
             </span>
             <span className="flex items-center gap-1" title="Made it">
-              <span style={{ color: displayCompletions > 0 ? "#1B3A5C" : undefined }}>✓</span>
+              <span style={{ color: isCompleted ? "#1B3A5C" : undefined }}>✓</span>
               {displayCompletions}
             </span>
           </div>
