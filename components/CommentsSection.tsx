@@ -195,6 +195,11 @@ export default function CommentsSection({ recipeId, highlightId }: Props) {
       setReplyingTo(null);
       localStorage.setItem("wfk_author_name", replyAuthor.trim());
       setMyName(replyAuthor.trim());
+      // Mark this recipe as commented so the card icon lights up
+      const commented: string[] = JSON.parse(localStorage.getItem("wfk_commented") ?? "[]");
+      if (!commented.includes(recipeId)) {
+        localStorage.setItem("wfk_commented", JSON.stringify([...commented, recipeId]));
+      }
     }
   };
 

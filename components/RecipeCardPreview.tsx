@@ -45,7 +45,9 @@ export default function RecipeCardPreview({ recipe, onClick }: Props) {
         .then((r) => r.json())
         .then((comments) => {
           const hasCommented = comments.some(
-            (c: { author: string }) => c.author.toLowerCase() === user.name.toLowerCase()
+            (c: { author: string; replies?: { author: string }[] }) =>
+              c.author.toLowerCase() === user.name.toLowerCase() ||
+              c.replies?.some((r) => r.author.toLowerCase() === user.name.toLowerCase())
           );
           if (hasCommented) {
             setIsCommented(true);
