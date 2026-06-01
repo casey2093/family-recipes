@@ -81,6 +81,8 @@ export default function AddRecipeModal({ defaultCategory, editRecipe, onClose }:
   const [processingError, setProcessingError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState<Partial<Record<keyof RecipeFormData, string>>>({});
+  const [dragIndex, setDragIndex] = useState<number | null>(null);
+  const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
 
 
   // Dish image
@@ -140,6 +142,24 @@ export default function AddRecipeModal({ defaultCategory, editRecipe, onClose }:
   const removeListItem = (field: "ingredients" | "instructions", index: number) => {
     setForm((prev) => ({ ...prev, [field]: prev[field].filter((_, i) => i !== index) }));
   };
+
+  const handleStepDragStart = (i: number) => setDragIndex(i);
+  const handleStepDragOver = (e: React.DragEvent, i: number) => {
+    e.preventDefault();
+    if (dragOverIndex !== i) setDragOverIndex(i);
+  };
+  const handleStepDrop = (i: number) => {
+    if (dragIndex === null || dragIndex === i) { setDragIndex(null); setDragOverIndex(null); return; }
+    setForm((prev) => {
+      const arr = [...prev.instructions];
+      const [moved] = arr.splice(dragIndex, 1);
+      arr.splice(i, 0, moved);
+      return { ...prev, instructions: arr };
+    });
+    setDragIndex(null);
+    setDragOverIndex(null);
+  };
+  const handleStepDragEnd = () => { setDragIndex(null); setDragOverIndex(null); };
 
   const selectedCategory = CATEGORIES.find((c) => c.id === form.category);
 
@@ -595,7 +615,32 @@ export default function AddRecipeModal({ defaultCategory, editRecipe, onClose }:
                 {errors.instructions && <p className="mb-1.5 text-xs text-red-500">{errors.instructions}</p>}
                 <div className="space-y-2">
                   {form.instructions.map((step, i) => (
-                    <div key={i} className="flex gap-2">
+                    <div
+                      key={i}
+                      draggable
+                      onDragStart={() => handleStepDragStart(i)}
+                      onDragOver={(e) => handleStepDragOver(e, i)}
+                      onDrop={() => handleStepDrop(i)}
+                      onDragEnd={handleStepDragEnd}
+                      className={`flex gap-2 rounded-xl transition-all ${
+                        dragIndex === i ? "opacity-40" : ""
+                      } ${
+                        dragOverIndex === i && dragIndex !== i
+                          ? "bg-blue-50 ring-2 ring-recipe-pink"
+                          : ""
+                      }`}
+                    >
+                      {/* Drag handle */}
+                      <div className="flex-shrink-0 flex items-start pt-2.5 cursor-grab active:cursor-grabbing">
+                        <svg className="w-3.5 h-4 text-gray-300 hover:text-gray-400 transition-colors" fill="currentColor" viewBox="0 0 8 12">
+                          <circle cx="2" cy="2" r="1.5" />
+                          <circle cx="6" cy="2" r="1.5" />
+                          <circle cx="2" cy="6" r="1.5" />
+                          <circle cx="6" cy="6" r="1.5" />
+                          <circle cx="2" cy="10" r="1.5" />
+                          <circle cx="6" cy="10" r="1.5" />
+                        </svg>
+                      </div>
                       <div className="flex-shrink-0 w-6 h-6 rounded-full bg-recipe-cream flex items-center justify-center text-xs font-bold text-recipe-navy mt-2">{i + 1}</div>
                       <textarea
                         value={step}
