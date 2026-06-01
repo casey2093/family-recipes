@@ -41,7 +41,6 @@ function SortableStep({ id, index, value, canRemove, onChange, onRemove }: Sorta
       <button
         type="button"
         aria-label="Drag to reorder"
-        tabIndex={-1}
         className="flex-shrink-0 flex items-start pt-2.5 cursor-grab active:cursor-grabbing touch-none"
         {...attributes}
         {...listeners}
