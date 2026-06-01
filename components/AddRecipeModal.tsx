@@ -1,8 +1,79 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
+import {
+  DndContext,
+  closestCenter,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+} from "@dnd-kit/core";
+import {
+  SortableContext,
+  verticalListSortingStrategy,
+  useSortable,
+  arrayMove,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 import { CATEGORIES } from "@/lib/categories";
 import { RecipeFormData, emptyFormData, Recipe, Author } from "@/lib/types";
+
+// ── Sortable step row (must live outside AddRecipeModal so hooks work) ────────
+interface SortableStepProps {
+  id: string;
+  index: number;
+  value: string;
+  canRemove: boolean;
+  onChange: (v: string) => void;
+  onRemove: () => void;
+}
+function SortableStep({ id, index, value, canRemove, onChange, onRemove }: SortableStepProps) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
+    useSortable({ id });
+  return (
+    <div
+      ref={setNodeRef}
+      style={{ transform: CSS.Transform.toString(transform), transition }}
+      className={`flex gap-2 rounded-xl ${isDragging ? "opacity-40" : ""}`}
+    >
+      {/* Drag handle — touch-none so the handle captures touch, not the page scroll */}
+      <button
+        type="button"
+        aria-label="Drag to reorder"
+        tabIndex={-1}
+        className="flex-shrink-0 flex items-start pt-2.5 cursor-grab active:cursor-grabbing touch-none"
+        {...attributes}
+        {...listeners}
+      >
+        <svg className="w-3.5 h-4 text-gray-300 hover:text-gray-400 transition-colors" fill="currentColor" viewBox="0 0 8 12">
+          <circle cx="2" cy="2" r="1.5" /><circle cx="6" cy="2" r="1.5" />
+          <circle cx="2" cy="6" r="1.5" /><circle cx="6" cy="6" r="1.5" />
+          <circle cx="2" cy="10" r="1.5" /><circle cx="6" cy="10" r="1.5" />
+        </svg>
+      </button>
+      <div className="flex-shrink-0 w-6 h-6 rounded-full bg-recipe-cream flex items-center justify-center text-xs font-bold text-recipe-navy mt-2">
+        {index + 1}
+      </div>
+      <textarea
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder={`Step ${index + 1}…`}
+        rows={2}
+        className="flex-1 border border-gray-200 rounded-xl px-3 py-2 text-base sm:text-sm focus:outline-none focus:border-recipe-navy resize-none"
+      />
+      {canRemove && (
+        <button
+          type="button"
+          onClick={onRemove}
+          className="px-2 text-gray-400 hover:text-red-400 rounded-lg self-start mt-2"
+        >
+          ✕
+        </button>
+      )}
+    </div>
+  );
+}
 
 function recipeToFormData(recipe: Recipe): RecipeFormData {
   return {
@@ -81,8 +152,18 @@ export default function AddRecipeModal({ defaultCategory, editRecipe, onClose }:
   const [processingError, setProcessingError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState<Partial<Record<keyof RecipeFormData, string>>>({});
-  const [dragIndex, setDragIndex] = useState<number | null>(null);
-  const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 8 } })
+  );
+
+  const handleStepDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
+    const oldIndex = parseInt((active.id as string).replace("step-", ""));
+    const newIndex = parseInt((over.id as string).replace("step-", ""));
+    setForm((prev) => ({ ...prev, instructions: arrayMove(prev.instructions, oldIndex, newIndex) }));
+  };
 
 
   // Dish image
@@ -143,23 +224,6 @@ export default function AddRecipeModal({ defaultCategory, editRecipe, onClose }:
     setForm((prev) => ({ ...prev, [field]: prev[field].filter((_, i) => i !== index) }));
   };
 
-  const handleStepDragStart = (i: number) => setDragIndex(i);
-  const handleStepDragOver = (e: React.DragEvent, i: number) => {
-    e.preventDefault();
-    if (dragOverIndex !== i) setDragOverIndex(i);
-  };
-  const handleStepDrop = (i: number) => {
-    if (dragIndex === null || dragIndex === i) { setDragIndex(null); setDragOverIndex(null); return; }
-    setForm((prev) => {
-      const arr = [...prev.instructions];
-      const [moved] = arr.splice(dragIndex, 1);
-      arr.splice(i, 0, moved);
-      return { ...prev, instructions: arr };
-    });
-    setDragIndex(null);
-    setDragOverIndex(null);
-  };
-  const handleStepDragEnd = () => { setDragIndex(null); setDragOverIndex(null); };
 
   const selectedCategory = CATEGORIES.find((c) => c.id === form.category);
 
@@ -613,49 +677,27 @@ export default function AddRecipeModal({ defaultCategory, editRecipe, onClose }:
               <div>
                 <label className="block text-sm font-bold text-recipe-navy mb-1.5">Instructions *</label>
                 {errors.instructions && <p className="mb-1.5 text-xs text-red-500">{errors.instructions}</p>}
-                <div className="space-y-2">
-                  {form.instructions.map((step, i) => (
-                    <div
-                      key={i}
-                      draggable
-                      onDragStart={() => handleStepDragStart(i)}
-                      onDragOver={(e) => handleStepDragOver(e, i)}
-                      onDrop={() => handleStepDrop(i)}
-                      onDragEnd={handleStepDragEnd}
-                      className={`flex gap-2 rounded-xl transition-all ${
-                        dragIndex === i ? "opacity-40" : ""
-                      } ${
-                        dragOverIndex === i && dragIndex !== i
-                          ? "bg-blue-50 ring-2 ring-recipe-pink"
-                          : ""
-                      }`}
-                    >
-                      {/* Drag handle */}
-                      <div className="flex-shrink-0 flex items-start pt-2.5 cursor-grab active:cursor-grabbing">
-                        <svg className="w-3.5 h-4 text-gray-300 hover:text-gray-400 transition-colors" fill="currentColor" viewBox="0 0 8 12">
-                          <circle cx="2" cy="2" r="1.5" />
-                          <circle cx="6" cy="2" r="1.5" />
-                          <circle cx="2" cy="6" r="1.5" />
-                          <circle cx="6" cy="6" r="1.5" />
-                          <circle cx="2" cy="10" r="1.5" />
-                          <circle cx="6" cy="10" r="1.5" />
-                        </svg>
-                      </div>
-                      <div className="flex-shrink-0 w-6 h-6 rounded-full bg-recipe-cream flex items-center justify-center text-xs font-bold text-recipe-navy mt-2">{i + 1}</div>
-                      <textarea
-                        value={step}
-                        onChange={(e) => updateListItem("instructions", i, e.target.value)}
-                        placeholder={`Step ${i + 1}…`}
-                        rows={2}
-                        className="flex-1 border border-gray-200 rounded-xl px-3 py-2 text-base sm:text-sm focus:outline-none focus:border-recipe-navy resize-none"
-                      />
-                      {form.instructions.length > 1 && (
-                        <button onClick={() => removeListItem("instructions", i)} className="px-2 text-gray-400 hover:text-red-400 rounded-lg self-start mt-2">✕</button>
-                      )}
+                <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleStepDragEnd}>
+                  <SortableContext
+                    items={form.instructions.map((_, i) => `step-${i}`)}
+                    strategy={verticalListSortingStrategy}
+                  >
+                    <div className="space-y-2">
+                      {form.instructions.map((instruction, i) => (
+                        <SortableStep
+                          key={`step-${i}`}
+                          id={`step-${i}`}
+                          index={i}
+                          value={instruction}
+                          canRemove={form.instructions.length > 1}
+                          onChange={(v) => updateListItem("instructions", i, v)}
+                          onRemove={() => removeListItem("instructions", i)}
+                        />
+                      ))}
                     </div>
-                  ))}
-                  <button onClick={() => addListItem("instructions")} className="text-sm text-recipe-navy font-semibold hover:text-recipe-pink flex items-center gap-1">+ Add step</button>
-                </div>
+                  </SortableContext>
+                </DndContext>
+                <button onClick={() => addListItem("instructions")} className="mt-2 text-sm text-recipe-navy font-semibold hover:text-recipe-pink flex items-center gap-1">+ Add step</button>
               </div>
 
               <div>
