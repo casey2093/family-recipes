@@ -20,6 +20,8 @@ import { CSS } from "@dnd-kit/utilities";
 import { CATEGORIES } from "@/lib/categories";
 import { RecipeFormData, emptyFormData, Recipe, Author } from "@/lib/types";
 
+const genId = () => Math.random().toString(36).slice(2, 9);
+
 // ── Shared drag handle icon ───────────────────────────────────────────────────
 function DragHandleIcon() {
   return (
@@ -187,6 +189,10 @@ export default function AddRecipeModal({ defaultCategory, editRecipe, onClose }:
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState<Partial<Record<keyof RecipeFormData, string>>>({});
 
+  // Stable IDs for each row — never index-based, so dropping doesn't flash
+  const [stepIds, setStepIds] = useState<string[]>(() => form.instructions.map(genId));
+  const [ingIds, setIngIds] = useState<string[]>(() => form.ingredients.map(genId));
+
   const sensors = useSensors(
     useSensor(MouseSensor),
     useSensor(TouchSensor, { activationConstraint: { distance: 8 } })
@@ -195,16 +201,20 @@ export default function AddRecipeModal({ defaultCategory, editRecipe, onClose }:
   const handleStepDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
     if (!over || active.id === over.id) return;
-    const oldIndex = parseInt((active.id as string).replace("step-", ""));
-    const newIndex = parseInt((over.id as string).replace("step-", ""));
+    const oldIndex = stepIds.indexOf(active.id as string);
+    const newIndex = stepIds.indexOf(over.id as string);
+    if (oldIndex === -1 || newIndex === -1) return;
+    setStepIds((prev) => arrayMove(prev, oldIndex, newIndex));
     setForm((prev) => ({ ...prev, instructions: arrayMove(prev.instructions, oldIndex, newIndex) }));
   };
 
   const handleIngDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
     if (!over || active.id === over.id) return;
-    const oldIndex = parseInt((active.id as string).replace("ing-", ""));
-    const newIndex = parseInt((over.id as string).replace("ing-", ""));
+    const oldIndex = ingIds.indexOf(active.id as string);
+    const newIndex = ingIds.indexOf(over.id as string);
+    if (oldIndex === -1 || newIndex === -1) return;
+    setIngIds((prev) => arrayMove(prev, oldIndex, newIndex));
     setForm((prev) => ({ ...prev, ingredients: arrayMove(prev.ingredients, oldIndex, newIndex) }));
   };
 
@@ -261,10 +271,14 @@ export default function AddRecipeModal({ defaultCategory, editRecipe, onClose }:
 
   const addListItem = (field: "ingredients" | "instructions") => {
     setForm((prev) => ({ ...prev, [field]: [...prev[field], ""] }));
+    if (field === "instructions") setStepIds((prev) => [...prev, genId()]);
+    if (field === "ingredients") setIngIds((prev) => [...prev, genId()]);
   };
 
   const removeListItem = (field: "ingredients" | "instructions", index: number) => {
     setForm((prev) => ({ ...prev, [field]: prev[field].filter((_, i) => i !== index) }));
+    if (field === "instructions") setStepIds((prev) => prev.filter((_, i) => i !== index));
+    if (field === "ingredients") setIngIds((prev) => prev.filter((_, i) => i !== index));
   };
 
 
@@ -340,16 +354,20 @@ export default function AddRecipeModal({ defaultCategory, editRecipe, onClose }:
       }
       if (!res.ok) throw new Error(data.error || "Extraction failed");
       const extracted = data.recipe;
+      const newInstructions: string[] = extracted.instructions?.length ? extracted.instructions : [""];
+      const newIngredients: string[] = extracted.ingredients?.length ? extracted.ingredients : [""];
       setForm((prev) => ({
         ...prev,
         title: extracted.title || "",
-        ingredients: extracted.ingredients?.length ? extracted.ingredients : [""],
-        instructions: extracted.instructions?.length ? extracted.instructions : [""],
+        ingredients: newIngredients,
+        instructions: newInstructions,
         prepTime: String(extracted.prepTime ?? ""),
         cookTime: String(extracted.cookTime ?? ""),
         servings: String(extracted.servings ?? ""),
         source: extracted.source || "",
       }));
+      setStepIds(newInstructions.map(genId));
+      setIngIds(newIngredients.map(genId));
       setStep("preview");
     } catch (err) {
       setProcessingError(err instanceof Error ? err.message : "Something went wrong. Please try again.");
@@ -698,12 +716,12 @@ export default function AddRecipeModal({ defaultCategory, editRecipe, onClose }:
                 <label className="block text-sm font-bold text-recipe-navy mb-1.5">Ingredients *</label>
                 {errors.ingredients && <p className="mb-1.5 text-xs text-red-500">{errors.ingredients}</p>}
                 <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleIngDragEnd}>
-                  <SortableContext items={form.ingredients.map((_, i) => `ing-${i}`)} strategy={verticalListSortingStrategy}>
+                  <SortableContext items={ingIds} strategy={verticalListSortingStrategy}>
                     <div className="space-y-2">
                       {form.ingredients.map((ing, i) => (
                         <SortableIngredient
-                          key={`ing-${i}`}
-                          id={`ing-${i}`}
+                          key={ingIds[i]}
+                          id={ingIds[i]}
                           index={i}
                           value={ing}
                           canRemove={form.ingredients.length > 1}
@@ -722,14 +740,14 @@ export default function AddRecipeModal({ defaultCategory, editRecipe, onClose }:
                 {errors.instructions && <p className="mb-1.5 text-xs text-red-500">{errors.instructions}</p>}
                 <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleStepDragEnd}>
                   <SortableContext
-                    items={form.instructions.map((_, i) => `step-${i}`)}
+                    items={stepIds}
                     strategy={verticalListSortingStrategy}
                   >
                     <div className="space-y-2">
                       {form.instructions.map((instruction, i) => (
                         <SortableStep
-                          key={`step-${i}`}
-                          id={`step-${i}`}
+                          key={stepIds[i]}
+                          id={stepIds[i]}
                           index={i}
                           value={instruction}
                           canRemove={form.instructions.length > 1}
