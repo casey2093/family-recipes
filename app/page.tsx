@@ -119,9 +119,9 @@ export default function HomePage() {
         <div
           className="absolute inset-x-0 top-0 z-10 flex flex-col items-center justify-start px-6 text-center pt-1"
           style={{
-            height: "36%",
+            height: "44%",
             background:
-              "linear-gradient(to bottom, #f0f9ff 0%, #f0f9ff 85%, rgba(240,249,255,0.85) 89%, rgba(240,249,255,0.6) 93%, rgba(240,249,255,0.3) 96%, transparent 98%)",
+              "linear-gradient(to bottom, #f0f9ff 0%, #f0f9ff 72%, rgba(240,249,255,0.75) 82%, rgba(240,249,255,0.4) 92%, transparent 100%)",
           }}
         >
           <h1
