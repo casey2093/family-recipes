@@ -107,9 +107,9 @@ export default function HomePage() {
           <div
             className="absolute top-0 inset-x-0 pointer-events-none"
             style={{
-              height: "22%",
+              height: "40%",
               background:
-                "linear-gradient(to bottom, #f0f9ff 0%, rgba(240,249,255,0.7) 50%, transparent 100%)",
+                "linear-gradient(to bottom, #f0f9ff 0%, rgba(240,249,255,0.88) 25%, rgba(240,249,255,0.4) 60%, transparent 100%)",
             }}
           />
 
@@ -119,7 +119,7 @@ export default function HomePage() {
         <div
           className="absolute inset-x-0 top-0 z-10 flex flex-col items-center justify-start px-6 text-center pt-3"
           style={{
-            height: "36%",
+            height: "42%",
             background:
               "linear-gradient(to bottom, #f0f9ff 0%, rgba(240,249,255,0.97) 55%, rgba(240,249,255,0.75) 75%, transparent 100%)",
           }}
