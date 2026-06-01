@@ -4,7 +4,8 @@ import { useState, useRef, useEffect } from "react";
 import {
   DndContext,
   closestCenter,
-  PointerSensor,
+  MouseSensor,
+  TouchSensor,
   useSensor,
   useSensors,
   DragEndEvent,
@@ -45,30 +46,26 @@ function SortableStep({ id, index, value, canRemove, onChange, onRemove }: Sorta
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id });
   return (
     <div ref={setNodeRef} style={{ transform: CSS.Transform.toString(transform), transition }} className="rounded-xl">
-      {isDragging ? (
-        <div className="rounded-xl border-2 border-dashed border-gray-200 bg-gray-50" style={{ minHeight: 72 }} />
-      ) : (
-        <div className="flex gap-2">
-          <button type="button" aria-label="Drag to reorder"
-            className="group/handle flex-shrink-0 flex items-start pt-2.5 cursor-grab active:cursor-grabbing touch-none"
-            {...attributes} {...listeners}>
-            <DragHandleIcon />
-          </button>
-          <div className="flex-shrink-0 w-6 h-6 rounded-full bg-recipe-cream flex items-center justify-center text-xs font-bold text-recipe-navy mt-2">
-            {index + 1}
-          </div>
-          <textarea
-            value={value}
-            onChange={(e) => onChange(e.target.value)}
-            placeholder={`Step ${index + 1}…`}
-            rows={2}
-            className="flex-1 border border-gray-200 rounded-xl px-3 py-2 text-base sm:text-sm focus:outline-none focus:border-recipe-navy resize-none"
-          />
-          {canRemove && (
-            <button type="button" onClick={onRemove} className="px-2 text-gray-400 hover:text-red-400 rounded-lg self-start mt-2">✕</button>
-          )}
+      <div className={`flex gap-2 ${isDragging ? "opacity-0" : ""}`}>
+        <button type="button" aria-label="Drag to reorder"
+          className="group/handle flex-shrink-0 flex items-start pt-2.5 cursor-grab active:cursor-grabbing touch-none"
+          {...attributes} {...listeners}>
+          <DragHandleIcon />
+        </button>
+        <div className="flex-shrink-0 w-6 h-6 rounded-full bg-recipe-cream flex items-center justify-center text-xs font-bold text-recipe-navy mt-2">
+          {index + 1}
         </div>
-      )}
+        <textarea
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          placeholder={`Step ${index + 1}…`}
+          rows={2}
+          className="flex-1 border border-gray-200 rounded-xl px-3 py-2 text-base sm:text-sm focus:outline-none focus:border-recipe-navy resize-none"
+        />
+        {canRemove && (
+          <button type="button" onClick={onRemove} className="px-2 text-gray-400 hover:text-red-400 rounded-lg self-start mt-2">✕</button>
+        )}
+      </div>
     </div>
   );
 }
@@ -86,30 +83,26 @@ function SortableIngredient({ id, index, value, canRemove, onChange, onRemove }:
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id });
   return (
     <div ref={setNodeRef} style={{ transform: CSS.Transform.toString(transform), transition }} className="rounded-xl">
-      {isDragging ? (
-        <div className="rounded-xl border-2 border-dashed border-gray-200 bg-gray-50" style={{ minHeight: 44 }} />
-      ) : (
-        <div className="flex gap-2">
-          <button type="button" aria-label="Drag to reorder"
-            className="group/handle flex-shrink-0 flex items-start pt-2.5 cursor-grab active:cursor-grabbing touch-none"
-            {...attributes} {...listeners}>
-            <DragHandleIcon />
-          </button>
-          <div className="flex-shrink-0 w-6 h-6 rounded-full bg-recipe-cream flex items-center justify-center text-xs font-bold text-recipe-navy mt-2">
-            {index + 1}
-          </div>
-          <input
-            type="text"
-            value={value}
-            onChange={(e) => onChange(e.target.value)}
-            placeholder={`Ingredient ${index + 1}`}
-            className="flex-1 border border-gray-200 rounded-xl px-3 py-2 text-base sm:text-sm focus:outline-none focus:border-recipe-navy"
-          />
-          {canRemove && (
-            <button type="button" onClick={onRemove} className="px-2 text-gray-400 hover:text-red-400 rounded-lg self-start mt-2">✕</button>
-          )}
+      <div className={`flex gap-2 ${isDragging ? "opacity-0" : ""}`}>
+        <button type="button" aria-label="Drag to reorder"
+          className="group/handle flex-shrink-0 flex items-start pt-2.5 cursor-grab active:cursor-grabbing touch-none"
+          {...attributes} {...listeners}>
+          <DragHandleIcon />
+        </button>
+        <div className="flex-shrink-0 w-6 h-6 rounded-full bg-recipe-cream flex items-center justify-center text-xs font-bold text-recipe-navy mt-2">
+          {index + 1}
         </div>
-      )}
+        <input
+          type="text"
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          placeholder={`Ingredient ${index + 1}`}
+          className="flex-1 border border-gray-200 rounded-xl px-3 py-2 text-base sm:text-sm focus:outline-none focus:border-recipe-navy"
+        />
+        {canRemove && (
+          <button type="button" onClick={onRemove} className="px-2 text-gray-400 hover:text-red-400 rounded-lg self-start mt-2">✕</button>
+        )}
+      </div>
     </div>
   );
 }
@@ -193,7 +186,8 @@ export default function AddRecipeModal({ defaultCategory, editRecipe, onClose }:
   const [errors, setErrors] = useState<Partial<Record<keyof RecipeFormData, string>>>({});
 
   const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 8 } })
+    useSensor(MouseSensor),
+    useSensor(TouchSensor, { activationConstraint: { distance: 8 } })
   );
 
   const [activeStepId, setActiveStepId] = useState<string | null>(null);
