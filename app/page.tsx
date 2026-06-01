@@ -94,7 +94,7 @@ export default function HomePage() {
       {/* ── Desktop hero (sticky, scroll-over effect) ── */}
       <div className="hidden sm:block sm:sticky sm:top-16 sm:overflow-hidden" style={{ height: "calc(100vh - 64px)", zIndex: 0, backgroundColor: "#f0f9ff" }}>
         {/* Photo */}
-        <div className="absolute inset-x-0 bottom-0" style={{ top: "23%" }}>
+        <div className="absolute inset-x-0 bottom-0" style={{ top: "20%" }}>
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src="/family-hero.jpg"
@@ -119,9 +119,9 @@ export default function HomePage() {
         <div
           className="absolute inset-x-0 top-0 z-10 flex flex-col items-center justify-start px-6 text-center pt-1"
           style={{
-            height: "32%",
+            height: "28%",
             background:
-              "linear-gradient(to bottom, #f0f9ff 0%, rgba(240,249,255,0.97) 55%, rgba(240,249,255,0.75) 75%, transparent 100%)",
+              "linear-gradient(to bottom, #f0f9ff 0%, #f0f9ff 68%, rgba(240,249,255,0.8) 82%, transparent 100%)",
           }}
         >
           <h1
