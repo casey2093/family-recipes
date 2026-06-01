@@ -724,7 +724,7 @@ export default function AddRecipeModal({ defaultCategory, editRecipe, onClose }:
                       ))}
                     </div>
                   </SortableContext>
-                  <DragOverlay>
+                  <DragOverlay dropAnimation={null}>
                     {activeIngId !== null && (() => {
                       const i = parseInt(activeIngId.replace("ing-", ""));
                       return (
@@ -768,7 +768,7 @@ export default function AddRecipeModal({ defaultCategory, editRecipe, onClose }:
                       ))}
                     </div>
                   </SortableContext>
-                  <DragOverlay>
+                  <DragOverlay dropAnimation={null}>
                     {activeStepId !== null && (() => {
                       const i = parseInt(activeStepId.replace("step-", ""));
                       return (
