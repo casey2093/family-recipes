@@ -121,17 +121,17 @@ export default function HomePage() {
           style={{
             height: "25%",
             background:
-              "linear-gradient(to bottom, #f0f9ff 0%, #f0f9ff 75%, rgba(240,249,255,0.5) 90%, transparent 100%)",
+              "linear-gradient(to bottom, #f0f9ff 0%, #f0f9ff 86%, rgba(240,249,255,0.5) 95%, transparent 100%)",
           }}
         >
           <h1
-            className="font-playfair font-bold text-recipe-navy leading-tight mb-2"
+            className="font-playfair font-bold text-recipe-navy leading-tight mb-1"
             style={{ fontSize: "clamp(2.2rem, 5.5vw, 4.2rem)" }}
           >
             Ware Family<br />
             <span className="text-recipe-pink">Kitchen</span>
           </h1>
-          <p className="text-gray-600 text-base sm:text-lg max-w-2xl mx-auto mb-4 leading-relaxed whitespace-nowrap">
+          <p className="text-gray-600 text-base sm:text-lg max-w-2xl mx-auto mb-2 leading-relaxed whitespace-nowrap">
             The best recipes from every corner of the family, lovingly collected right here.
           </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
