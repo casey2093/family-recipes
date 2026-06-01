@@ -94,7 +94,7 @@ export default function HomePage() {
       {/* ── Desktop hero (sticky, scroll-over effect) ── */}
       <div className="hidden sm:block sm:sticky sm:top-16 sm:overflow-hidden" style={{ height: "calc(100vh - 64px)", zIndex: 0, backgroundColor: "#f0f9ff" }}>
         {/* Photo */}
-        <div className="absolute inset-x-0 bottom-0" style={{ top: "26%" }}>
+        <div className="absolute inset-x-0 bottom-0" style={{ top: "23%" }}>
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src="/family-hero.jpg"
@@ -117,9 +117,9 @@ export default function HomePage() {
 
         {/* Sky-blue text panel */}
         <div
-          className="absolute inset-x-0 top-0 z-10 flex flex-col items-center justify-start px-6 text-center pt-3"
+          className="absolute inset-x-0 top-0 z-10 flex flex-col items-center justify-start px-6 text-center pt-1"
           style={{
-            height: "37%",
+            height: "32%",
             background:
               "linear-gradient(to bottom, #f0f9ff 0%, rgba(240,249,255,0.97) 55%, rgba(240,249,255,0.75) 75%, transparent 100%)",
           }}
@@ -131,8 +131,8 @@ export default function HomePage() {
             Ware Family<br />
             <span className="text-recipe-pink">Kitchen</span>
           </h1>
-          <p className="text-gray-600 text-base sm:text-lg max-w-xl mx-auto mb-5 leading-relaxed">
-            The best recipes from every corner of the family&nbsp;—&nbsp;lovingly collected right here.
+          <p className="text-gray-600 text-base sm:text-lg max-w-2xl mx-auto mb-4 leading-relaxed whitespace-nowrap">
+            The best recipes from every corner of the family, lovingly collected right here.
           </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             {categoryButtons}
